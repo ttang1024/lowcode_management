@@ -1,0 +1,23 @@
+{
+  "name": "lowcode-server",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Small decorator-based HTTP server for the lowcode API, built on Express.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --skipLibCheck"
+  },
+  "dependencies": {
+    "compression": "^1.8.2",
+    "express": "^4.22.3",
+    "multer": "^1.4.5-lts.1"
+  },
+  "peerDependencies": {
+    "reflect-metadata": "^0.1.14"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.8.1"
+  }
+}

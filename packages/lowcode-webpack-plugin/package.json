@@ -1,0 +1,14 @@
+{
+  "name": "lowcode-webpack-plugin",
+  "version": "1.0.0",
+  "license": "MIT",
+  "description": "Webpack plugin that builds low-code sub-app component bundles against the host app's shared modules (window.MAINAPP).",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "dependencies": {
+    "ansi-html-community": "^0.0.8",
+    "html-entities": "^2.6.0",
+    "strip-ansi": "^6.0.1",
+    "style-loader": "^3.3.1"
+  }
+}

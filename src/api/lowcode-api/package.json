@@ -1,0 +1,13 @@
+{
+  "name": "lowcode-api",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "lowcode-dev-proxy": "^1.0.0",
+    "lowcode-server": "^1.0.0",
+    "mysql2": "^2.3.3",
+    "nacos": "^2.6.3",
+    "sequelize": "^5.22.5",
+    "sequelize-typescript": "^1.1.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "lowcode-dev-proxy",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "description": "Dev-server middleware that forwards requests to an upstream API or serves local JSON mocks.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --skipLibCheck"
+  }
+}

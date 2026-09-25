@@ -1,0 +1,11 @@
+{
+  "name": "lowcode-core",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "lowcode-configs": "^1.0.0",
+    "lowcode-services": "^1.0.0",
+    "lowcode-ui": "^1.0.0",
+    "lowcode-registry": "^1.0.0"
+  }
+}

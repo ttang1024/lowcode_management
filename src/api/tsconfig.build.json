@@ -1,0 +1,10 @@
+{
+  "//": "Production build config for the API. Unlike tsconfig.json (used by ts-node in dev), this drops the `paths` aliases so `lowcode-server` / `lowcode-dev-proxy` resolve to their COMPILED packages (packages/*/lib) from node_modules. That keeps the package sources out of the program, so rootDir stays at src/api and the emitted dist mirrors the source tree (dist/src/api/<pkg>/...).",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {},
+    "rootDir": "."
+  },
+  "include": ["./**/*.ts"]
+}

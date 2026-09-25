@@ -1,0 +1,27 @@
+{
+  "ts-node": {
+    "transpileOnly": true,
+    "require": ["tsconfig-paths/register"]
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "lowcode-server": ["packages/lowcode-server/src/index.ts"],
+      "lowcode-server/*": ["packages/lowcode-server/src/*"],
+      "lowcode-dev-proxy": ["packages/lowcode-dev-proxy/src/index.ts"],
+      "lowcode-dev-proxy/*": ["packages/lowcode-dev-proxy/src/*"]
+    },
+    "module": "CommonJS",
+    "target": "ES6",
+    "noImplicitAny": false,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "downlevelIteration": true,
+    "jsx": "react",
+    "skipLibCheck": true,
+  },
+}

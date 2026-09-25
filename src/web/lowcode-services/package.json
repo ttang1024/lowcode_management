@@ -1,0 +1,9 @@
+{
+  "name": "lowcode-services",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "lowcode-configs": "^1.0.0",
+    "lowcode-api": "^1.0.0"
+  }
+}

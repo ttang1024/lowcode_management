@@ -1,0 +1,12 @@
+{
+  "name": "lowcode-ui",
+  "version": "1.0.0",
+  "license": "MIT",
+  "peerDependencies": {
+    "lowcode-core": "^1.0.0"
+  },
+  "dependencies": {
+    "lowcode-configs": "^1.0.0",
+    "lowcode-registry": "^1.0.0"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "lowcode-registry",
+  "version": "1.17.0",
+  "license": "MIT",
+  "dependencies": {
+    "lowcode-webpack-plugin": "^1.0.0"
+  }
+}

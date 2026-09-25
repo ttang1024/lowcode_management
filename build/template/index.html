@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-scale="true">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="Expires" content="0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-control" content="no-cache">
+  <meta http-equiv="Cache" content="no-cache">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Lowcode Studio</title>
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="format-detection" content="email=no" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <script type="<%= htmlWebpackPlugin.options.mainType %>">
+    if(/^http:/.test(location.href)){
+      location.replace(location.href.replace(/^http:/,'https:'));
+    }
+  </script>
+  <base href="/" />
+  <style type="text/css">
+    html, body, #lowcode_wrapper { background: #f4f6fb; font-size: 12px; height: 100%; margin: 0; padding: 0; overflow: auto; }
+    /* Boot spinner, shown until the app mounts (hidden via .hide-template). */
+    .template-page-spinning { position: fixed; top: 120px; left: 50%; width: 28px; height: 28px; margin-left: -14px; border-radius: 50%; border: 3px solid rgb(79 70 229 / 0.2); border-top-color: #4f46e5; animation: lc-boot-spin 0.8s linear infinite; }
+    .template-page-spinning.hide-template { display: none; }
+    @keyframes lc-boot-spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body>
+  <div id="template-loading" class="template-page-spinning" role="status" aria-label="Loading"></div>
+  <div id="lowcode_wrapper"></div>
+</body>
+
+</html>

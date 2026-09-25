@@ -1,0 +1,12 @@
+{
+  "name": "lowcode-blocks",
+  "version": "2.0.0-local",
+  "license": "MIT",
+  "private": true,
+  "description": "Config-driven building blocks for the low-code admin and generated apps: AbstractTable, AbstractForm, AbstractActions, pickers, page header. Built on lowcode-kit.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "peerDependencies": {
+    "react": ">=19"
+  }
+}

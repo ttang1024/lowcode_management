@@ -1,0 +1,13 @@
+{
+  "name": "lowcode-common",
+  "version": "2.0.0-local",
+  "license": "MIT",
+  "private": true,
+  "description": "Shared browser foundations: HTTP client (Network/Service), OSS and URL helpers, config and rematch helper types.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "peerDependencies": {
+    "@rematch/core": "^2.x",
+    "react": ">=16.8.0"
+  }
+}

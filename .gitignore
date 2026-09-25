@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+packages/*/lib/
+*.tsbuildinfo
+*.hot-update.*
+
+# Runtime data
+appdata/
+
+# Logs and temp files
+*.log
+*.orig
+*.diff
+coverage/
+.history/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Editors and tools
+.idea/
+.vscode/
+.claude/
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini

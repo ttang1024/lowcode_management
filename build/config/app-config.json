@@ -1,0 +1,11 @@
+{
+  "ENV": "",
+  "API": "",
+  "APP_TYPE": "lowcode",
+  "APP_BASE_URL": "/",
+  "FILEGW": "/resource/upload",
+  "CDN": "/resources",
+  "DOMAIN": "/",
+  "GAPI": "",
+  "SERVICE_DOMAIN": ""
+}
