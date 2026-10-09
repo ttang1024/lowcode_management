@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronsLeft, ChevronsRight, LogOut } from 'lucide-react';
 import { Tooltip, cn } from 'lowcode-kit';
 import { navGroups } from './menu';
+import { useAuth } from './AuthGate';
 
-export interface SidebarProps {
+interface SidebarProps {
   selectedKey?: string;
   collapsed?: boolean;
   /** Omitted in the mobile drawer, which has no collapse control. */
@@ -31,7 +32,10 @@ export function BrandMark({ className = 'size-8' }: { className?: string }) {
 // Labels fade out (rather than unmount) so the rail animates smoothly.
 const fade = (collapsed: boolean) => cn('transition-opacity duration-200', collapsed && 'pointer-events-none opacity-0');
 
+const footerButton = 'flex size-[30px] cursor-pointer items-center justify-center rounded-lg border-0 bg-slate-400/10 text-slate-400 transition-colors hover:bg-slate-400/20 hover:text-white';
+
 export default function Sidebar({ selectedKey, collapsed = false, onToggle }: SidebarProps) {
+  const auth = useAuth();
   return (
     <aside
       className={cn(
@@ -81,18 +85,27 @@ export default function Sidebar({ selectedKey, collapsed = false, onToggle }: Si
         ))}
       </nav>
 
-      <div className={cn('flex h-14 shrink-0 items-center gap-2 border-t border-slate-400/10', collapsed ? 'justify-center' : 'justify-between pr-[18px] pl-[26px]')}>
+      <div className={cn('flex min-h-14 shrink-0 items-center gap-2 border-t border-slate-400/10', collapsed ? 'justify-center py-3' : 'justify-between pr-[18px] pl-[26px]')}>
         {!collapsed && <span className="text-xs tracking-wide whitespace-nowrap text-slate-500">v{process.env.VERSION}</span>}
-        {onToggle && (
-          <button
-            type="button"
-            onClick={onToggle}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="flex size-[30px] cursor-pointer items-center justify-center rounded-lg border-0 bg-slate-400/10 text-slate-400 transition-colors hover:bg-slate-400/20 hover:text-white"
-          >
-            {collapsed ? <ChevronsRight size="1em" /> : <ChevronsLeft size="1em" />}
-          </button>
-        )}
+        <div className={cn('flex gap-2', collapsed && 'flex-col')}>
+          {auth.required && (
+            <Tooltip title="Sign out" side="right">
+              <button type="button" onClick={auth.logout} aria-label="Sign out" className={footerButton}>
+                <LogOut size="1em" />
+              </button>
+            </Tooltip>
+          )}
+          {onToggle && (
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              className={footerButton}
+            >
+              {collapsed ? <ChevronsRight size="1em" /> : <ChevronsLeft size="1em" />}
+            </button>
+          )}
+        </div>
       </div>
     </aside>
   );

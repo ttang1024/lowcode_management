@@ -14,7 +14,7 @@ import type { RecordModel } from '../model';
 import { JsonInput } from 'lowcode-ui';
 
 
-export interface MockRecordProps extends RecordViewProps<RecordModel> {
+interface MockRecordProps extends RecordViewProps<RecordModel> {
   enterSubAction: (action: AbstractAction) => void
   apiPickerKey: string
 }

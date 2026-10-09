@@ -1,26 +1,28 @@
-import { GeneralPagedResult } from '../framework';
+import { Controller, Get, Param, Public } from 'lowcode-server';
+import { GeneralPagedResult, PageQuery } from '../framework';
 import { OptionsModel } from '../models';
-import { Controller, Get, Param } from 'lowcode-server';
-import { PageQuery } from '../framework';
 
+/** Read-only endpoints used by published pages, which have no admin session */
+@Public()
 @Controller('/public')
 export default class PublicController {
-  /** Get the dictionary value info by code */
+  /**
+   * The values of the dictionary `code`, or with `@index` a page of all
+   * dictionaries as `{ label: name, value: code }`.
+   */
   @Get('/options')
   async findOptionValues(@Param('code') code: string, @Param('pageNo') pageNo: number, @Param('pageSize') pageSize: number) {
     if (code == '@index') {
-      const query = { pageNo, pageSize };
-      const rule = PageQuery.createQuery(query);
+      const query = { pageNo, pageSize } as PageQuery;
+      const rule = PageQuery.createQuery(OptionsModel, query);
+      rule.attributes = ['name', 'code'];
       const response = await OptionsModel.findAndCountAll(rule);
-      const rows = response.rows?.map((item) => {
-        return { label: item.name, value: item.code };
-      });
-      const data = { rows, count: response.count };
-      return GeneralPagedResult.success(data, query.pageNo, query.pageSize);
+      const rows = response.rows.map((item) => ({ label: item.name, value: item.code }));
+      const page = PageQuery.pageOf(rule);
+      return GeneralPagedResult.success({ rows, count: response.count }, page.pageNo, page.pageSize);
     }
-    const res = await OptionsModel.findOne({ where: { code: code } });
-    const rows = (res as OptionsModel)?.value || [];
-    const data = { rows, count: rows.length };
-    return GeneralPagedResult.success(data, 1, rows.length);
+    const res = code ? await OptionsModel.findOne({ where: { code: String(code) } }) : null;
+    const rows = res?.value || [];
+    return GeneralPagedResult.success({ rows, count: rows.length }, 1, rows.length);
   }
 }

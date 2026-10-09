@@ -27,5 +27,3 @@ class Registry {
 
 /** Singleton converter registry. */
 export const ConverterRegistry = new Registry();
-
-export default ConverterRegistry;

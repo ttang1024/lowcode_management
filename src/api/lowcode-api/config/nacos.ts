@@ -1,86 +1,57 @@
-import url from 'url';
-import { NacosConfigClient } from 'nacos';
-import fs from 'fs';
-import config, { type NacosAppConfig, reloadEnv } from './index';
+import { NacosConfigClient } from 'nacos-config';
+import config, { applyDatabaseConfig, type DatabaseSettings } from './index';
 import { Logger } from '../framework';
 import type SequelizeDbInitializer from '../models';
 
 const logger = new Logger();
 
-const runtime = {
-  env: config.ENV,
-  client: null as any as NacosConfigClient,
-  dbInitializer: null as any as SequelizeDbInitializer,
-};
+const dataId = 'lowcode-config.json';
+const group = 'DEFAULT_GROUP';
 
-function init(dbInitializer: SequelizeDbInitializer) {
-  const dataId = 'lowcode-config.json';
-  const dataGroup = 'DEFAULT_GROUP';
+let client: NacosConfigClient | null = null;
 
-  runtime.dbInitializer = dbInitializer;
+/**
+ * Applies a pushed config and (re)connects the database. A config that is not
+ * valid JSON or has no usable `url` is logged and ignored, keeping the current
+ * connection.
+ */
+async function install(value: string, dbInitializer: SequelizeDbInitializer) {
+  try {
+    applyDatabaseConfig(JSON.parse(value) as DatabaseSettings);
+  } catch (ex) {
+    logger.log(`Nacos ${dataId} needs valid JSON with a database url; keeping the current config`, (ex as Error).message);
+    return;
+  }
+  try {
+    await dbInitializer.initialize();
+    logger.log(`Nacos ${dataId} applied`);
+  } catch (ex) {
+    logger.log('Database initialisation failed', ex);
+  }
+}
 
-  // Install the app config
-  const installAppConfigurer = async(value: string) => {
-    let configValue: NacosAppConfig;
-    try {
-      configValue = JSON.parse(value);
-    } catch (ex) {
-      logger.log(`Nacos ${dataId} is not valid JSON, keeping current config`, ex);
-      return;
-    }
-    const meta = url.parse(configValue.url);
-    Object.keys(configValue).forEach((key) => config[key] = configValue[key]);
-    config.db.username = configValue.username;
-    config.db.password = configValue.password;
-    config.db.host = meta.hostname;
-    config.db.port = meta.port as any;
-    config.db.database = meta.pathname?.replace(/\//, '');
-    try {
-      await dbInitializer.initialize();
-      logger.log(`\nNacos Sync ${dataId} Successfully`);
-    } catch (ex) {
-      logger.log('Database initialisation failed', ex);
-    }
-  };
-
-  // Use the local mock config when explicitly mocking, or in development unless
-  // a real Nacos server is configured via NACOS_URL. This lets `npm start` run
-  // offline without needing a Nacos server.
-  // No Nacos client is created in this case.
+/**
+ * Loads the database config: from the local mock config when mocking, or in
+ * development when no Nacos server is configured (so `npm start` works
+ * offline); otherwise from Nacos, re-applying it whenever it changes there.
+ */
+async function init(dbInitializer: SequelizeDbInitializer) {
   const useMock = process.env.NODE_MODE == 'mock' ||
     (process.env.NODE_ENV == 'development' && !process.env.NACOS_URL);
   if (useMock) {
-    return installAppConfigurer(JSON.stringify(require('./mock').default));
+    return install(JSON.stringify(require('./mock').default), dbInitializer);
   }
 
-  const client = new NacosConfigClient({
+  client = new NacosConfigClient({
     serverAddr: config.NACOS_URL,
     namespace: config.NACOS_NS,
   });
-  runtime.client = client;
-
-  // Subscribe to config changes
-  client.subscribe({ dataId, group: dataGroup }, installAppConfigurer);
+  client.subscribe({ dataId, group }, (value: string) => install(value, dbInitializer));
 }
 
 process.on('beforeExit', () => {
-  runtime.client?.unSubscribe({ dataId: 'lowcode-config.json', group: 'DEFAULT_GROUP' }, () => {
-    logger.log('unSubscribe lowcode-config.json');
-  });
+  client?.unSubscribe({ dataId, group }, () => logger.log(`Unsubscribed from ${dataId}`));
 });
-
-if (process.env.NODE_ENV == 'development') {
-  // Dev mode: hot-reload the config environment here
-  fs.watchFile('package.json', () => {
-    reloadEnv();
-    if (runtime.env !== config.ENV && config.NACOS_NS) {
-      runtime.env = config.ENV;
-      console.log('Switch the environment to:', config.ENV);
-      runtime.client?.close?.();
-      init(runtime.dbInitializer);
-    }
-  });
-}
 
 export default {
   init,

@@ -1,18 +1,16 @@
 import { Controller, Get, Post, Body, Param } from 'lowcode-server';
 import { FunctionsModel } from '../models';
-import {
-  GeneralPagedResult,
-  GeneralResult,
-  PageQuery,
-} from '../framework';
+import { GeneralResult, PageQuery } from '../framework';
+import { pagedList, writable } from '../framework/crud';
+import { requireId } from '../framework/errors';
 
-/** Function management */
+/** Function snippet management */
 @Controller('/functions')
 export default class FunctionsController {
   /** Add function */
   @Post('/add')
   async addFunction(@Body data: FunctionsModel) {
-    const response = await FunctionsModel.create(data.toJSON());
+    const response = await FunctionsModel.create(writable(FunctionsModel, data));
     return GeneralResult.success(response);
   }
 
@@ -25,7 +23,7 @@ export default class FunctionsController {
         snippet: data.snippet,
         type: data.type,
       } as FunctionsModel,
-      { where: { id: data.id } },
+      { where: { id: requireId(data.id) } },
     );
     return GeneralResult.success(model);
   }
@@ -33,23 +31,13 @@ export default class FunctionsController {
   /** Get the given function */
   @Get('/detail')
   async findFunction(@Param('id') id: number) {
-    const model = await FunctionsModel.findByPk(id);
+    const model = await FunctionsModel.findByPk(requireId(id));
     return GeneralResult.success(model);
   }
 
   /** Paginated query of the function list */
   @Post('/list')
   async pagedQueryFunctions(@Body data: PageQuery) {
-    const response = await FunctionsModel.findAndCountAll(
-      PageQuery.createQuery(data, null, [['updatedAt', 'DESC']]),
-    );
-    return GeneralPagedResult.success(response, data.pageNo, data.pageSize);
-  }
-
-  /** DeleteFunction */
-  @Post('/remove')
-  async removeFunction(@Param('id') id:number) {
-    const res = await FunctionsModel.destroy({ where: { id } });
-    return GeneralResult.success(res);
+    return pagedList(FunctionsModel, data, { order: [['updatedAt', 'DESC']] });
   }
 }

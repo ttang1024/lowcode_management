@@ -7,12 +7,9 @@ import { AbstractForm, OptionsPicker } from 'lowcode-blocks';
 import type {
   AbstractGroups,
   AbstractRules,
-  RecordViewProps,
 } from 'lowcode-blocks/src/interface';
 import type { RecordModel } from '../model';
 import { CodeEditor } from 'lowcode-ui';
-
-export interface FunctionsRecordProps extends RecordViewProps<RecordModel> {}
 
 export default function ApisRecord() {
   // Validation rules

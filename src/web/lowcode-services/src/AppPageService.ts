@@ -8,8 +8,6 @@ import type { AppPageModel as Model, PageLoggerModel } from 'lowcode-api/models'
 import type { GeneralPagedResult, GeneralResult } from 'lowcode-api/framework';
 import ApiService from './ApiService';
 import ResourceService from './ResourceService';
-import AppService from './AppService';
-import LoggerService from './LoggerService';
 
 type AppPageModel = OmitModel<Model>
 
@@ -96,93 +94,54 @@ class AppPageService extends ApiService {
   }
 
   /**
-   * Publish page
-   * NoneDescription
+   * Publish page: marks it online and updates its published config
    */
   updateAppPageOnline(data: AppPageModel) {
-    return this.any<GeneralResult>('/app-page/online?id=' + data.id, {}, 'POST')
+    const query = { id: data.id, storeDir: ResourceService.storeDir };
+    return this.any<GeneralResult>('/app-page/online?' + new URLSearchParams(query as any), {}, 'POST')
       .json()
-      .showLoading()
-      .then(() => {
-        return ResourceService.mergePageResource(data.appCode, data.code, {
-          status: 1,
-        });
-      });
+      .showLoading();
   }
 
   /**
-   * Unpublish page
-   * NoneDescription
+   * Unpublish page: marks it offline and updates its published config
    */
   updateAppPageOffline(data: AppPageModel) {
-    return this.any<GeneralResult>('/app-page/offline?id=' + data.id, {}, 'POST')
+    const query = { id: data.id, storeDir: ResourceService.storeDir };
+    return this.any<GeneralResult>('/app-page/offline?' + new URLSearchParams(query as any), {}, 'POST')
       .json()
-      .showLoading()
-      .then(() => {
-        return ResourceService.mergePageResource(data.appCode, data.code, {
-          status: 2,
-        });
-      });
+      .showLoading();
   }
 
   /**
-   * Remove pinned page
-   * @param id
-   * @returns
+   * Delete a page that has never been published, with its config file
    */
   removeAppPage(id: number) {
-    return this.any<GeneralResult>('/app-page/remove?id=' + id, {}, 'POST').json();
+    const query = { id, storeDir: ResourceService.storeDir };
+    return this.any<GeneralResult>('/app-page/remove?' + new URLSearchParams(query as any), {}, 'POST').json();
   }
 
   /**
-   * Back up the page
-   */
-  backupPage(data: PageConfigurerModel, name: string) {
-    const url = ResourceService.createBackupPageUrl(name, data.appCode, data.code);
-    const content = new Blob([JSON.stringify(data)]);
-    return ResourceService.saveResource(url, content);
-  }
-
-  /**
-   * ReleasePage
+   * Publish a page designed in the studio. The server checks the version,
+   * backs it up (when `backup`), logs the release, marks page and app online
+   * and writes the files in one operation. If someone published a newer
+   * version meanwhile it rejects with `{ message: 'conflict', data: <that version> }`.
    */
   async publishAppPageOnline(data: PageConfigurerModel, logger: Partial<PageLoggerModel>, backup: boolean) {
-    const { appCode, code } = data;
-    const appInfo = await AppService.findAppByCode(appCode);
-    const response = await ResourceService.getPageResource(appCode, code);
-    if (response.version > data.version) {
-      // if someone else has modified it
-      return Promise.reject({ message: 'conflict', data: response });
-    }
-    const config = {
-      ...response,
-      ...data,
-      appCode: appCode,
-      code: code,
-      // Version + 1
-      version: data.version + 1,
-      status: 1,
-    };
-    logger.pageCode = LoggerService.makeCode(appCode, code);
-    if (backup) {
-      logger.revert = `${Date.now()}.json`;
-      await this.backupPage(config, logger.revert);
-    }
-    // Update data
-    await this.any<GeneralResult>('/app-page/publish', { config, logger }, 'POST').json();
-    // Update the resource file
-    await ResourceService.savePageResource(config);
-    // Ensure the owning app is published so the public runtime can resolve it:
-    // the runtime loads webapps/<code>/index.json and requires status === 1, so
-    // publishing a page now also onlines the app and writes its app resource.
-    const app = appInfo.result;
-    if (app) {
-      if (app.status !== 1) {
-        await AppService.updateAppOnline(app);
+    try {
+      const res = await this.post<GeneralResult<PageConfigurerModel>>('/app-page/publish', {
+        storeDir: ResourceService.storeDir,
+        config: data,
+        logger,
+        backup,
+      }).json();
+      return res.result;
+    } catch (ex: any) {
+      if (ex?.code === 'CONFLICT') {
+        return Promise.reject({ message: 'conflict', data: ex.data?.result });
       }
-      await ResourceService.mergeAppResource({ ...app, status: 1 });
+      throw ex;
     }
-    return config;
   }
 
   /**

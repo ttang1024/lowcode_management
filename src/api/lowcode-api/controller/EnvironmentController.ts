@@ -1,16 +1,27 @@
-
+import { Op } from 'sequelize';
 import { Controller, Get, Post, Body, Param } from 'lowcode-server';
 import { EnvironmentModel } from '../models';
-import { GeneralPagedResult, GeneralResult, PageQuery, PreScope } from '../framework';
-import { Op } from 'sequelize';
+import { GeneralResult, PageQuery, PreScope } from '../framework';
+import { exportAll, importRecords, pagedList, writable } from '../framework/crud';
+import { requireId } from '../framework/errors';
+import * as resources from '../framework/resources';
 
-/** Environment variable management */
+const LIST_OPS = { name: Op.like, value: Op.like };
+const ORDER = [['update_at', 'DESC']];
+
+/** Matches the variable with this id in the current environment only. */
+const byId = (id: unknown) => PreScope.createEnvWhere({ where: { id: requireId(id) } });
+
+/**
+ * Environment variable management. Variables are per environment (see
+ * PreScope): every read and write here is limited to the current one.
+ */
 @Controller('/env/variables')
 export default class EnvironmentController {
   /** Add environment variable */
   @Post('/add')
   async addVariable(@Body data: EnvironmentModel) {
-    const response = await EnvironmentModel.create(data.toJSON());
+    const response = await EnvironmentModel.create(writable(EnvironmentModel, data));
     return GeneralResult.success(response);
   }
 
@@ -22,7 +33,7 @@ export default class EnvironmentController {
         value: data.value,
         desc: data.desc,
       } as EnvironmentModel,
-      { where: { id: data.id } },
+      byId(data?.id) as any,
     );
     return GeneralResult.success(model);
   }
@@ -30,67 +41,57 @@ export default class EnvironmentController {
   /** Get the given environment variable */
   @Get('/detail')
   async findVariable(@Param('id') id: number) {
-    const model = await EnvironmentModel.findByPk(id);
+    const model = await EnvironmentModel.findOne(byId(id));
     return GeneralResult.success(model);
   }
 
   /** Paginated query of the environment variable list */
   @Post('/list')
   async pagedQueryVariable(@Body data: PageQuery) {
-    const rule = PageQuery.createQuery(
-      data,
-      {
-        path: Op.like,
-        name: Op.like,
-      },
-      [['update_at', 'DESC']],
-    );
-    const options = PreScope.createEnvWhere(rule);
-    const response = await EnvironmentModel.findAndCountAll(options);
-    return GeneralPagedResult.success(response, data.pageNo, data.pageSize);
+    return pagedList(EnvironmentModel, data, { ops: LIST_OPS, order: ORDER, envScoped: true });
   }
 
   /** Export environment variable data for the given criteria */
   @Post('/export')
   async exportQueriedVariables(@Body data: PageQuery) {
-    delete data.pageNo;
-    delete data.pageSize;
-    const rule = PageQuery.createUnlimitQuery(
-      data,
-      {
-        path: Op.like,
-        value: Op.like,
-      },
-      [['update_at', 'DESC']],
-    );
-    rule.attributes = [
-      'name', 'value', 'desc',
-    ];
-    const models = await EnvironmentModel.findAll(rule);
-    return GeneralResult.success(models);
+    return exportAll(EnvironmentModel, data, {
+      ops: LIST_OPS,
+      order: ORDER,
+      attributes: ['name', 'value', 'desc'],
+      envScoped: true,
+    });
   }
 
-  /** Paginated query of the environment variable list */
+  /** All variables of the current environment */
   @Post('/all')
   async queryAllVariables() {
     const response = await EnvironmentModel.findAll(PreScope.createEnvWhere({}));
     return GeneralResult.success(response);
   }
 
-  /** Import environment variables */
+  /**
+   * Publish the current environment's variables as the env file the runtime
+   * reads (`getEnvVar`). That file is public: never store secrets here.
+   */
+  @Post('/publish')
+  async publishVariables(@Body body: { storeDir: string }) {
+    const key = resources.keys.env(resources.storeDirOf(body?.storeDir));
+    const rows = await EnvironmentModel.findAll(PreScope.createEnvWhere({}));
+    const variables = Object.fromEntries(rows.map((row) => [row.name, row.value]));
+    await resources.update(key, () => variables);
+    return GeneralResult.success({ count: rows.length });
+  }
+
+  /** Import environment variables (only new names are added) */
   @Post('/import')
-  async importVariables(@Body models: EnvironmentModel[]) {
-    const results = await EnvironmentModel.bulkCreate(models, {
-      ignoreDuplicates: true,
-      // only import new records
-    });
-    return GeneralResult.success(results.map((m) => m.toJSON()).filter((m: any) => m.id > 0));
+  async importVariables(@Body models: unknown) {
+    return importRecords(EnvironmentModel, models);
   }
 
   /** Delete the given variable */
   @Post('/remove')
   async removeVariable(@Body request: { id: number }) {
-    const response = await EnvironmentModel.destroy({ where: { id: request.id } });
+    const response = await EnvironmentModel.destroy(byId(request?.id));
     return GeneralResult.success(response);
   }
 }

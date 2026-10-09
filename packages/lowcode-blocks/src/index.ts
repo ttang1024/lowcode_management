@@ -9,8 +9,6 @@
 
 /* ----------------------------- components -------------------------------- */
 export { default as AbstractForm } from './abstract-form';
-export { getAllValues } from './abstract-form/InputWrap';
-export { ConverterRegistry } from './abstract-form/register';
 export { default as AbstractTable } from './abstract-table';
 export { default as AbstractObject } from './abstract-object';
 export { default as AbstractTableInput } from './abstract-table-input';
@@ -29,7 +27,7 @@ export { default as RadioList } from './radio-list';
 export { default as CodeHighlight } from './code-highlight';
 export { default as CrashProvider } from './crash-provider';
 export { default as XlsxPicker } from './xlsx-picker';
-export { default as PageHeader, OverridePageHeader } from './page-header';
+export { OverridePageHeader } from './page-header';
 export { default as Exception, NotFoundView } from './exception';
 
 /* -------------------------------- types ---------------------------------- */
@@ -39,11 +37,9 @@ export type {
   AbstractButton,
   AbstractButtons,
   AbstractColumns,
-  AbstractColumnType,
   AbstractConfig,
   AbstractEColumns,
   AbstractEditColumnType,
-  AbstractFilters,
   AbstractFormGroupItemType,
   AbstractFormItemType,
   AbstractGroups,
@@ -52,12 +48,10 @@ export type {
   AbstractMenuType,
   AbstractQueryType,
   AbstractResponseModel,
-  AbstractRule,
   AbstractRules,
   AbstractSearchProps,
   AbstractSFields,
   AbstractTableInputProps,
-  AbstractTableInstance,
   AbstractTableProps,
   AbstractValueConverter,
   AdvancePickerProps,

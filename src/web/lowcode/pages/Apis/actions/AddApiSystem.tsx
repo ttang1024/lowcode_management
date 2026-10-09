@@ -7,7 +7,7 @@ import { AbstractForm } from 'lowcode-blocks';
 import type { AbstractGroups, AbstractRules, RecordViewProps } from 'lowcode-blocks/src/interface';
 import type { RecordModel } from '../model';
 
-export interface AddApiSystemProps extends RecordViewProps<RecordModel> { }
+interface AddApiSystemProps extends RecordViewProps<RecordModel> { }
 
 export default function AddApiSystem(_props: AddApiSystemProps) {
   // Validation rules

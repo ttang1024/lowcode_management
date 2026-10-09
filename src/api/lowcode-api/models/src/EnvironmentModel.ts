@@ -11,7 +11,7 @@ export default class EnvironmentModel extends BaseModel<EnvironmentModel> {
   @PrimaryKey
   @AutoIncrement
   @Column
-    id: number;
+    id!: number;
 
   /** Variable name */
   @Unique({ name: 'uidx_name_unique_index', msg: 'Duplicate variable name' })
@@ -21,7 +21,7 @@ export default class EnvironmentModel extends BaseModel<EnvironmentModel> {
     type: DataType.STRING(100),
     comment: 'Variable name',
   })
-    name: string;
+    name!: string;
 
   /** Variable value */
   @Length({ max: 500, msg: 'Variable value length exceeds the limit' })
@@ -31,7 +31,7 @@ export default class EnvironmentModel extends BaseModel<EnvironmentModel> {
     type: DataType.STRING(500),
     comment: 'Variable value',
   })
-    value: string;
+    value!: string;
 
   /** Description */
   @Length({ max: 100, msg: 'VariableDescriptionexceeds the limit' })
@@ -41,7 +41,7 @@ export default class EnvironmentModel extends BaseModel<EnvironmentModel> {
     type: DataType.STRING(100),
     comment: 'Description',
   })
-    desc: string;
+    desc!: string;
 
   /** Whether enabled */
   @Default('1')
@@ -50,5 +50,5 @@ export default class EnvironmentModel extends BaseModel<EnvironmentModel> {
     type: DataType.TINYINT,
     comment: 'Whether enabled; default 1, 0=disabled 1=enabled',
   })
-    enable: string;
+    enable!: string;
 }

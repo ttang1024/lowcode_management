@@ -1,5 +1,5 @@
-import { Table, Column, PrimaryKey, AutoIncrement, Length, Unique, AllowNull, DataType } from 'sequelize-typescript';
-import BaseModel from './BaseModel';
+import { Table, Column, PrimaryKey, AutoIncrement, Length, Unique, AllowNull, DataType, Is } from 'sequelize-typescript';
+import BaseModel, { CODE_MESSAGE, CODE_PATTERN } from './BaseModel';
 
 export enum AppStatus {
   INIT = 0,
@@ -13,7 +13,7 @@ export default class AppModel extends BaseModel<AppModel> {
   @PrimaryKey
   @AutoIncrement
   @Column
-    id: number;
+    id!: number;
 
   /** System display name */
   @Length({ max: 30, msg: 'App name cannot exceed 20 characters' })
@@ -22,59 +22,60 @@ export default class AppModel extends BaseModel<AppModel> {
     type: DataType.STRING(30),
     comment: 'System display name',
   })
-    name: string;
+    name!: string;
 
   /** System code,used for routing */
   @Unique({ name: 'code_unique_index', msg: 'Duplicate app code' })
   @AllowNull(false)
   @Length({ max: 32, msg: 'App code length cannot exceed 32 characters' })
+  @Is({ args: CODE_PATTERN, msg: CODE_MESSAGE })
   @Column({
     type: DataType.STRING(32),
     comment: 'System code',
   })
-    code: string;
+    code!: string;
 
   /** System Logo */
   @Column({
     type: DataType.STRING,
     comment: 'System Logo',
   })
-    logo: string;
+    logo!: string;
 
   /** SystemDescription */
   @Column({
     type: DataType.STRING,
     comment: 'SystemDescription',
   })
-    desc: string;
+    desc!: string;
 
   /** Icon library URL */
   @Column({
     type: DataType.STRING,
     comment: 'Icon library URL',
   })
-    iconUrl: string;
+    iconUrl!: string;
 
   /** Home page URL */
   @Column({
     type: DataType.STRING(255),
     comment: 'System home page',
   })
-    home: string;
+    home!: string;
 
   /** System owner */
   @Column({
     type: DataType.STRING(32),
     comment: 'System owner',
   })
-    owner: string;
+    owner!: string;
 
   /** App status  0:init 1:online 2:offline */
   @Column({
     type: DataType.INTEGER,
     comment: 'App status  0=init 1=online 2=offline',
   })
-    status: AppStatus;
+    status!: AppStatus;
 
   /** Referenced bundle */
   @Column({

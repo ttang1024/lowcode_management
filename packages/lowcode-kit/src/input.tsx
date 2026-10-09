@@ -23,7 +23,7 @@ export const fieldShellClass = cn(
 
 const addonClass = 'flex shrink-0 items-center self-stretch border border-slate-200 bg-slate-50 px-3 text-sm whitespace-nowrap text-slate-500';
 
-export function ClearIcon() {
+function ClearIcon() {
   return <svg viewBox="0 0 16 16" className="size-3" fill="currentColor" aria-hidden="true"><path d="M4.3 3.3 8 7l3.7-3.7 1 1L9 8l3.7 3.7-1 1L8 9l-3.7 3.7-1-1L7 8 3.3 4.3z" /></svg>;
 }
 

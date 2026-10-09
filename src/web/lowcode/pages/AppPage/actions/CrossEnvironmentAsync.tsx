@@ -15,7 +15,7 @@ interface SyncRowModelExt<T = any> extends SyncRowModel<T> {
   pageConfig: PageConfigurerModel
 }
 
-export interface CrossEnvironmentAsyncProps extends RecordViewProps<RecordModel> {
+interface CrossEnvironmentAsyncProps extends RecordViewProps<RecordModel> {
   app: AppConfigurerModel
 }
 

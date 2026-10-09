@@ -7,21 +7,21 @@ export default class PageLoggerModel extends BaseModel<PageLoggerModel> {
   @PrimaryKey
   @AutoIncrement
   @Column
-    id: number;
+    id!: number;
 
   /** Operator */
   @Column({
     type: DataType.STRING(30),
     comment: 'Operator',
   })
-    operator: string;
+    operator!: string;
 
   /** Tag */
   @Column({
     type: DataType.STRING(30),
     comment: 'Tag',
   })
-    tag: string;
+    tag!: string;
 
   /** LogDescription */
   @AllowNull
@@ -29,14 +29,14 @@ export default class PageLoggerModel extends BaseModel<PageLoggerModel> {
     type: DataType.STRING,
     comment: 'LogDescription',
   })
-    description: string;
+    description?: string | null;
 
   /** Log type */
   @Column({
     type: DataType.INTEGER,
     comment: 'Log type 1=version 0=update',
   })
-    type: number;
+    type!: number;
 
   /** Related document */
   @AllowNull
@@ -44,7 +44,7 @@ export default class PageLoggerModel extends BaseModel<PageLoggerModel> {
     type: DataType.STRING,
     comment: 'Related document',
   })
-    docUrl: string;
+    docUrl?: string | null;
 
   /** Restore point */
   @AllowNull
@@ -52,12 +52,12 @@ export default class PageLoggerModel extends BaseModel<PageLoggerModel> {
     type: DataType.STRING,
     comment: 'Restore point',
   })
-    revert: string;
+    revert?: string | null;
 
   /** Page code */
   @Column({
     type: DataType.STRING(60),
     comment: 'Page code',
   })
-    pageCode: string;
+    pageCode!: string;
 }

@@ -9,7 +9,7 @@ interface IProps {
 
 /**
  * Router bound to an explicit `history` instance (shared with the runtime). On
- * react-router v6 this uses the `unstable_HistoryRouter`, the supported way to
+ * react-router v7 this uses the `unstable_HistoryRouter`, the supported way to
  * drive routing from a custom `history` object created by the `history` package.
  */
 class CustomRouter extends React.Component<IProps> {

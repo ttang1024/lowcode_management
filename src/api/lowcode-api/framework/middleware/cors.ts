@@ -1,37 +1,51 @@
 /**
  * @module cors
- * @description Adds CORS headers for referers on an allowed host and answers preflights.
+ * @description Allows credentialed cross-origin calls from the studio's own sites and answers preflights.
  */
 import type { RequestHandler } from 'lowcode-server';
 
 /**
- * Allowed hosts end with `CORS_ALLOW_DOMAIN` when it is set; otherwise only
- * localhost is allowed, for local dev.
+ * With `CORS_ALLOW_DOMAIN` set (e.g. `example.com`), that domain and its
+ * subdomains are allowed, which covers the other environments' studios
+ * (cross-environment sync). Otherwise only localhost is, for local dev.
  */
-function isAllowedHost(hostname: string) {
-  const allowDomain = process.env.CORS_ALLOW_DOMAIN;
-  return allowDomain ?
-    new RegExp(allowDomain.replace(/[.]/g, '\\.') + '$', 'i').test(hostname) :
-    /^(localhost|127\.0\.0\.1)$/i.test(hostname);
+export function isAllowedOrigin(origin: string, allowDomain = process.env.CORS_ALLOW_DOMAIN) {
+  let hostname: string;
+  try {
+    const url = new URL(origin);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return false;
+    hostname = url.hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  if (!allowDomain) return hostname === 'localhost' || hostname === '127.0.0.1';
+  const domain = allowDomain.toLowerCase().replace(/^\./, '');
+  // Match on a label boundary, so `evilexample.com` is not `example.com`.
+  return hostname === domain || hostname.endsWith('.' + domain);
 }
 
 export default function cors(): RequestHandler {
   return (req, res, next) => {
-    const referer = req.headers.referer;
-    if (/^\/media\//.test(req.path) || !referer) return next();
-    let origin: URL;
-    try {
-      origin = new URL(referer);
-    } catch {
+    const origin = req.headers.origin;
+    if (/^\/media\//.test(req.path) || !origin) return next();
+    // The answer depends on Origin, so caches must key on it.
+    res.vary('Origin');
+    if (!isAllowedOrigin(origin)) {
+      // Let simple requests through (the browser withholds the response);
+      // refuse preflights outright.
+      if (req.method === 'OPTIONS') {
+        res.status(403).end();
+        return;
+      }
       return next();
     }
-    if (!isAllowedHost(origin.hostname)) return next();
-    res.setHeader('access-control-allow-origin', origin.origin);
-    res.setHeader('access-control-allow-method', 'POST, GET, OPTIONS, PUT, DELETE, HEAD');
-    res.setHeader('Access-Control-Allow-Headers', 'content-type,token');
-    res.setHeader('access-control-allow-credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     if (req.method === 'OPTIONS') {
-      res.status(200).end();
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'content-type,token');
+      res.setHeader('Access-Control-Max-Age', '600');
+      res.status(204).end();
       return;
     }
     next();

@@ -1,0 +1,9 @@
+{
+  "//": "Strict typecheck for the server side (API, server framework, tests). The web app still builds under the looser tsconfig.json; tighten it the same way module by module.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["src/api/**/*.ts", "packages/lowcode-server/src/**/*.ts", "packages/lowcode-dev-proxy/src/**/*.ts", "test/**/*.ts"]
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { PublicService } from 'lowcode-services';
 
-export interface DictionaryOption {
+interface DictionaryOption {
   label: string;
   value: any;
 }

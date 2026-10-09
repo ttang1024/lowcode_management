@@ -22,10 +22,24 @@ function getOptions() {
   return globalOptions;
 }
 
+// "API index changed" flag, so another tab of this browser reloads it too.
+// Storage can be unavailable (private mode, blocked site data): then only
+// this tab's cache is refreshed.
+const REFRESH_KEY = 'apiNeedRefresh';
+
+function readRefreshFlag() {
+  try {
+    const value = localStorage.getItem(REFRESH_KEY) === 'yes';
+    localStorage.removeItem(REFRESH_KEY);
+    return value;
+  } catch {
+    return false;
+  }
+}
+
 function installApiResources() {
-  const needRefresh = localStorage.getItem('apiNeedRefresh') === 'yes';
+  const needRefresh = readRefreshFlag();
   if (cache.apis == null || needRefresh) {
-    localStorage.removeItem('apiNeedRefresh');
     cache.apis = ResourceService.getApiResources();
   }
   return Promise.resolve(cache.apis);
@@ -41,12 +55,19 @@ function installEnvConfig() {
   });
 }
 
+/** @deprecated Returns `template` unchanged. Kept because plugin bundles reach it via `window.MAINAPP.lowcodeCore`. */
 function renderEnvVarible(template: string) {
   return template;
 }
 
+/** Marks the API index as changed: the next call reloads it, here and in other tabs. */
 function setRefresh() {
-  localStorage.setItem('apiNeedRefresh', 'yes');
+  cache.apis = null;
+  try {
+    localStorage.setItem(REFRESH_KEY, 'yes');
+  } catch {
+    // Storage unavailable: this tab's cache is already cleared.
+  }
 }
 
 async function getEnvVariable(name: string, defaultValue = '') {

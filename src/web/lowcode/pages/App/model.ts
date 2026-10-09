@@ -22,7 +22,6 @@ const model = {
     // Publish app
     async updateAppOnline(this: any, data: RecordModel) {
       await withLoading(AppService.updateAppOnline(data));
-      await ResourceService.mergeAppResource({ ...data, status: 1 });
       this.leaveAction({ message: 'App published' });
     },
     // Delete a non-live app with its pages and published files
@@ -35,14 +34,11 @@ const model = {
     // Unpublish app
     async updateAppOffline(this: any, data: RecordModel) {
       await withLoading(AppService.updateAppOffline(data));
-      await ResourceService.mergeAppResource({ ...data, status: 2 });
       this.leaveAction({ message: 'App unpublished' });
     },
   },
 };
 
 export default model;
-
-export type ModelState = typeof model.state;
 
 export type ModelProps = RematchModelTo<typeof model>;

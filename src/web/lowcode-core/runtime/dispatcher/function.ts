@@ -1,5 +1,16 @@
 import config from './config';
-const sandbox = [
+/**
+ * Formatters, href templates and request/response hooks are JavaScript
+ * written in the designer and run with `new Function`, with full access to
+ * the page. That is only acceptable because the code comes from signed-in
+ * studio admins (see the API's auth): treat it like any other app code.
+ *
+ * These globals are shadowed as `undefined` parameters to keep snippets to
+ * their inputs (model, route, response, ...). This is NOT a security
+ * boundary: `globalThis`, `this` or `[].constructor.constructor` still reach
+ * everything.
+ */
+const shadowedGlobals = [
   'window', 'document', 'eval', 'Function', 'fetch', 'self',
 ];
 
@@ -16,7 +27,7 @@ function create<T = void>(body?: string, sign?: string[], defaultValue?: T, keep
     const id = `${keepError ? 1 : 0}|${String(defaultValue)}|${sign.join('-')}|${body}`;
     let fn = cacheable ? cache.get(id) : undefined;
     if (!fn) {
-      const handler = new Function(...[...sign, 'getEnvVar', ...sandbox], body);
+      const handler = new Function(...[...sign, 'getEnvVar', ...shadowedGlobals], body);
       fn = (...args: any[]) => {
         try {
           const realArgs = sign.map((m, i) => args[i]);

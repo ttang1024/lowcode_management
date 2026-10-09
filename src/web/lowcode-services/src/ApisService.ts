@@ -7,6 +7,7 @@
 import type { ApisModel as Model } from 'lowcode-api/models';
 import type { GeneralPagedResult, GeneralResult } from 'lowcode-api/framework';
 import ApiService from './ApiService';
+import ResourceService from './ResourceService';
 
 export type ApisModel = OmitModel<Model>
 
@@ -50,6 +51,14 @@ class ApisService extends ApiService {
 
   syncApi(data: ApisModel) {
     return this.post<GeneralResult<ApisModel>>('/apis/sync', data).json();
+  }
+
+  /**
+   * Publish APIs to the index the runtime reads: the given names, or with
+   * none, rebuild the whole index from the database.
+   */
+  publishApis(names?: string[]) {
+    return this.post<GeneralResult<{ count: number }>>('/apis/publish', { storeDir: ResourceService.storeDir, names }).json();
   }
 }
 export default new ApisService();

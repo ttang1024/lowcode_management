@@ -68,4 +68,3 @@ export const OverridePageHeader = PageHeader as OverridePageHeaderType;
 OverridePageHeader.Container = Container;
 OverridePageHeader.PageHeader = HeaderView;
 
-export default PageHeader;

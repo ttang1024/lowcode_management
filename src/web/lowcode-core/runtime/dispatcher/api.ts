@@ -65,8 +65,7 @@ async function findApi(id: string) {
  * @param context API parameter value context
  * @param allIn params to attach directly
  */
-export async function callApi<T>(api: ApiConfigurerModel, context: Model, route: Model, allIn?: Model, mockResponse?: any, options?: Record<string, any>): Promise<T> {
-  const runtime = { isCallNetwork: false };
+async function callApi<T>(api: ApiConfigurerModel, context: Model, route: Model, allIn?: Model, mockResponse?: any, options?: Record<string, any>): Promise<T> {
   try {
     const meta = await findApi(api?.meta?.name);
     const page = store.getPageState();
@@ -90,7 +89,6 @@ export async function callApi<T>(api: ApiConfigurerModel, context: Model, route:
     if (data.cancel == true) {
       return execResponseFunction(api, res, context, route, page, options);
     } else if (api.mock) {
-      runtime.isCallNetwork = true;
       res = await ResourceService.getApiResponseResource(meta.id.toString());
     } else {
       const response = network.any(url, data.body, method as any, headers).with(contentType).setExtra({
@@ -99,8 +97,6 @@ export async function callApi<T>(api: ApiConfigurerModel, context: Model, route:
       });
       loading && response.showLoading('Loading...');
       api.silent && response.silent();
-      api.mock && response.credentials(undefined);
-      runtime.isCallNetwork = true;
       res = await response[responseType]();
     }
 

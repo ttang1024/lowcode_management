@@ -48,7 +48,7 @@ const stats: Stat[] = [
   { key: 'apis', title: 'APIs', href: '/admin/apis/list', icon: <Plug size="1em" />, tone: 'emerald', load: () => silent(ApisService.pagedQueryApi(COUNT_QUERY)) },
   { key: 'options', title: 'Dictionaries', href: '/admin/options/list', icon: <BookOpen size="1em" />, tone: 'amber', load: () => silent(OptionsService.pagedQueryOptions(COUNT_QUERY)) },
   { key: 'functions', title: 'Functions', href: '/admin/functions/list', icon: <SquareFunction size="1em" />, tone: 'violet', load: () => silent(FunctionsService.pagedQueryOptions(COUNT_QUERY)) },
-  { key: 'env', title: 'Env variables', href: '/admin/env/list', icon: <SlidersHorizontal size="1em" />, tone: 'rose', load: () => silent(EnvVariablesService.pagedQueryVariable(COUNT_QUERY)) },
+  { key: 'env', title: 'Config variables', href: '/admin/env/list', icon: <SlidersHorizontal size="1em" />, tone: 'rose', load: () => silent(EnvVariablesService.pagedQueryVariable(COUNT_QUERY)) },
 ];
 
 const steps = [

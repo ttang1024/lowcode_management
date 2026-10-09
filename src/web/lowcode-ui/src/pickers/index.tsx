@@ -5,32 +5,32 @@ import { AppPageService, AppService, PackageService, ResourceService } from 'low
 import lowcodeConfigs from 'lowcode-configs';
 import { OptionsPicker } from 'lowcode-blocks';
 
-export const BUTTON_TARGETS = [
+const BUTTON_TARGETS = [
   { label: 'Top', value: 'top' },
   { label: 'Inline', value: 'cell' },
 ];
 
-export const BUTTON_SELECT_MODES = [
+const BUTTON_SELECT_MODES = [
   { label: 'None', value: '' },
   { label: 'Single-select', value: 'single' },
   { label: 'Multi-select', value: 'multiple' },
 ];
 
-export const COMPONENT_SIZE = [
+const COMPONENT_SIZE = [
   { label: 'Large', value: 'large' },
   { label: 'Center', value: 'middle' },
   { label: 'Small', value: 'small' },
 ];
 
 // Button shape
-export const BUTTON_SHAPES = [
+const BUTTON_SHAPES = [
   { label: 'Default', value: 'default' },
   { label: 'Circle', value: 'circle' },
   { label: 'Rounded', value: 'round' },
 ];
 
 // Button type
-export const BUTTON_TYPES = [
+const BUTTON_TYPES = [
   { label: 'default', value: 'default' },
   { label: 'primary', value: 'primary' },
   { label: 'ghost', value: 'ghost' },
@@ -40,20 +40,20 @@ export const BUTTON_TYPES = [
 ];
 
 // Form button position
-export const FORM_BUTTONS_TARGETS = [
+const FORM_BUTTONS_TARGETS = [
   { label: 'Bottom', value: 'footer' },
   { label: 'Top', value: 'top' },
 ];
 
 // Layout area type
-export const VIEW_ALIGN = [
+const VIEW_ALIGN = [
   { label: 'Left', value: 'left' },
   { label: 'Center', value: 'center' },
   { label: 'Right', value: 'right' },
 ];
 
 // Inline table edit mode
-export const TABLE_INPUT_MODE = [
+const TABLE_INPUT_MODE = [
   { label: 'Full edit', value: 'all' },
   { label: 'Single-row edit', value: 'row' },
 ];
@@ -74,43 +74,43 @@ export function SizePicker(props: RadioListProps) {
   );
 }
 
-export function ShapePicker(props: RadioListProps) {
+function ShapePicker(props: RadioListProps) {
   return (
     <RadioPicker {...props} options={BUTTON_SHAPES} />
   );
 }
 
-export function ButtonTargetPicker(props: RadioListProps) {
+function ButtonTargetPicker(props: RadioListProps) {
   return (
     <RadioPicker optionType="button" {...props} options={BUTTON_TARGETS} />
   );
 }
 
-export function ButtonSelectModePicker(props: RadioListProps) {
+function ButtonSelectModePicker(props: RadioListProps) {
   return (
     <RadioPicker optionType="button" {...props} options={BUTTON_SELECT_MODES} />
   );
 }
 
-export function TableInputModePicker(props: RadioListProps) {
+function TableInputModePicker(props: RadioListProps) {
   return (
     <RadioPicker {...props} options={TABLE_INPUT_MODE} />
   );
 }
 
-export function ButtonTypePicker(props: AdvancePickerProps<any, any>) {
+function ButtonTypePicker(props: AdvancePickerProps<any, any>) {
   return (
     <AdvancePicker {...props} data={BUTTON_TYPES} />
   );
 }
 
-export function FormButtonTargetPicker(props: RadioListProps) {
+function FormButtonTargetPicker(props: RadioListProps) {
   return (
     <RadioPicker {...props} options={FORM_BUTTONS_TARGETS} />
   );
 }
 
-export function PackagePicker(props: AdvancePickerProps<any, any>) {
+function PackagePicker(props: AdvancePickerProps<any, any>) {
   const queryPackages = async() => {
     const data = await PackageService.getPackages();
     return {
@@ -142,26 +142,26 @@ export function EnvVariablesPicker(props: AdvancePickerProps<any, any>) {
   );
 }
 
-export function AlignPicker(props: RadioListProps) {
+function AlignPicker(props: RadioListProps) {
   return (
     <RadioPicker {...props} options={VIEW_ALIGN} />
   );
 }
 
-export function EnvPicker(props: AdvancePickerProps<any, any>) {
+function EnvPicker(props: AdvancePickerProps<any, any>) {
   return (
     <AdvancePicker valueMode="object" data={Envs} {...props} />
   );
 }
 
 
-export function ApiSystem(props: AdvancePickerProps<any, any>) {
+function ApiSystem(props: AdvancePickerProps<any, any>) {
   return (
     <OptionsPicker {...props} optionsKey={lowcodeConfigs.API_SYSTEM_KEY} />
   );
 }
 
-export function AppPicker(props: AdvancePickerProps<any, any>) {
+function AppPicker(props: AdvancePickerProps<any, any>) {
   const queryApps = async(query) => {
     const response = await AppService.pagedQuery({
       pageNo: query.pageNo,
@@ -180,7 +180,7 @@ export function AppPicker(props: AdvancePickerProps<any, any>) {
   );
 }
 
-export function PagePicker({ appCode, ...props }: AdvancePickerProps<any, any> & { appCode?: string }) {
+function PagePicker({ appCode, ...props }: AdvancePickerProps<any, any> & { appCode?: string }) {
   const queryApps = async(query) => {
     const response = await AppPageService.pagedQueryPage({
       pageNo: query.pageNo,

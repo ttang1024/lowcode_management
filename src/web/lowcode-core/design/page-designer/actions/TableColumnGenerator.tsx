@@ -14,7 +14,7 @@ export interface ColumnModel {
   title: string;
 }
 
-export const useApiModel = () => {
+const useApiModel = () => {
   const context = useContext<PageNodeContextValue>(LowcodeDesigner.NodeContext);
   const options = context.options;
   return useMemo<ColumnModel[]>(() => {

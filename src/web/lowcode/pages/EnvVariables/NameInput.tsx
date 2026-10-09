@@ -3,7 +3,7 @@ import { OptionsPicker } from 'lowcode-blocks';
 import lowcodeConfigs from 'lowcode-configs';
 import { Input } from 'lowcode-kit';
 
-export interface NameInputProps {
+interface NameInputProps {
   type: string
   value?: string
   onChange?: (v: string) => void

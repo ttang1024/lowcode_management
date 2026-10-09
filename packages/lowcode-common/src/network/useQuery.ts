@@ -19,7 +19,7 @@ export interface HooksResponse<T = any> {
 }
 
 /** Run an async fetcher inside React state, re-running when `deps` change. */
-export function useQueryHook<T = any>(fetcher: () => Promise<T> | T, deps: any[] = []): HooksResponse<T> {
+function useQueryHook<T = any>(fetcher: () => Promise<T> | T, deps: any[] = []): HooksResponse<T> {
   const [state, setState] = useState<{ data?: T; status: QueryStatus; error?: any }>({ status: 'loading' });
 
   // Only the latest request may write state, so a slow earlier response
@@ -65,5 +65,3 @@ export function createQueryProxy(instance: any, deps: any[] = []): any {
     },
   );
 }
-
-export default useQueryHook;

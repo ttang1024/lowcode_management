@@ -29,7 +29,7 @@ export interface ApiWrapperContextValue {
   data: Record<string, any>
 }
 
-export const ApiWrapperContext = React.createContext<ApiWrapperContextValue>({ data: null });
+const ApiWrapperContext = React.createContext<ApiWrapperContextValue>({ data: null });
 
 export const ApiWrapperUIContext = React.createContext({ loading: false });
 

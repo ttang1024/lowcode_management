@@ -40,7 +40,7 @@ export interface ActionsContextValue {
   enter: (action: string, row?: any) => void;
   primaryKey: string;
 }
-export const ActionsContext = createContext<ActionsContextValue>({ enter: () => undefined, primaryKey: 'id' });
+const ActionsContext = createContext<ActionsContextValue>({ enter: () => undefined, primaryKey: 'id' });
 export function useActionsContext() {
   return useContext(ActionsContext);
 }

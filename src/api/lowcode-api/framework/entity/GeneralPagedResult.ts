@@ -27,15 +27,15 @@ export default class GeneralPagedResult<T> {
    * @param
    */
   static success<M>(data: { rows: Array<M>, count: number, options?: any }, pageId: number, size: number) {
-    const hasMore = pageId * size < data.count;
-    const count = isNaN(data.count) ? 0 : data.count;
+    const count = Number.isFinite(data.count) ? data.count : 0;
+    const hasMore = size > 0 && pageId * size < count;
     return new GeneralPagedResult(BusinessEnum.SUCCESS, {
       options: data.options,
       models: data.rows || [],
       count: count,
       hasMore: hasMore,
       pageNo: pageId,
-      totalPage: Math.ceil(count / size),
+      totalPage: size > 0 ? Math.ceil(count / size) : 1,
       pageSize: size,
     });
   }

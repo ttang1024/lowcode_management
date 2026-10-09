@@ -1,8 +1,7 @@
 /**
  * @module abstract-form/InputWrap
  * @description
- *   Wraps a single form-field editor and exposes {@link getAllValues}, a helper
- *   that flattens every value out of a form instance or a plain values object.
+ *   Wraps a single form-field editor.
  */
 import React from 'react';
 import { Input } from 'lowcode-kit';
@@ -35,14 +34,5 @@ const InputWrap: React.FC<InputWrapProps> = ({ item, value, onChange, children, 
   }
   return <Input value={value} disabled={disabled} onChange={(e) => onChange?.(e.target.value)} />;
 };
-
-/** Collect all values from a form instance or a values object. */
-export function getAllValues(source: any): Record<string, any> {
-  if (!source) return {};
-  if (typeof source.getFieldsValue === 'function') {
-    return source.getFieldsValue(true) || {};
-  }
-  return { ...source };
-}
 
 export default InputWrap;

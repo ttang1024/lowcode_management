@@ -17,7 +17,7 @@ import type { UploadFileValue } from 'lowcode-blocks/src/advance-upload/type';
 
 type Awaitable<T> = PromiseLike<T> & { showLoading?: () => PromiseLike<T> };
 
-export interface CrudServices<R> {
+interface CrudServices<R> {
   /** Paged list query; resolves to `{ result: { count, models } }`. */
   query: (query: any) => Awaitable<{ result: PagedRecords<R> }>;
   /** Fetch one record by id (used when entering an action with an id). */
@@ -26,12 +26,12 @@ export interface CrudServices<R> {
   update?: (data: R) => Awaitable<any>;
 }
 
-export interface PagedRecords<R> {
+interface PagedRecords<R> {
   count: number;
   models: R[];
 }
 
-export interface CrudModelOptions<R, S> {
+interface CrudModelOptions<R, S> {
   name: string;
   services: CrudServices<R>;
   /** Extra page state merged over the shared state. */

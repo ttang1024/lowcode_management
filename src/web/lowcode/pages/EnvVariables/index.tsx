@@ -45,9 +45,9 @@ function OptionsPageView(props: ModelProps) {
       },
     },
     {
-      title: 'Build environment variables',
+      title: 'Build config variables',
       icon: <Hammer size="1em" />,
-      confirm: 'Are you sure you want to build the environment variables?',
+      confirm: 'Are you sure you want to build the config variables?',
       danger: true,
       click: props.buildVariablesAsync,
     },
@@ -78,15 +78,20 @@ function OptionsPageView(props: ModelProps) {
           rowKey={idKey}
           columns={columns}
           buttons={buttons}
-          extraNode={<Alert className="mb-2">Variable changes take effect after you build environment variables.</Alert>}
+          extraNode={(
+            <Alert className="mb-2" type="warning">
+              Variable changes take effect after you build config variables. Built variables are published as a
+              public file that anyone can read, so never store passwords, tokens or other secrets here.
+            </Alert>
+          )}
           // filters={this.filters}
           data={props.allRecords}
           searchFields={searchFields}
           onQuery={props.queryAllAsync as any}
         />
       </AbstractActions.List>
-      <AbstractActions.Popup width={600} title="Create environment variable" action="add" use={Record} />
-      <AbstractActions.Popup width={600} title="Edit environment variable" action="update" use={Record} />
+      <AbstractActions.Popup width={600} title="Create config variable" action="add" use={Record} />
+      <AbstractActions.Popup width={600} title="Edit config variable" action="update" use={Record} />
       <AbstractActions.Popup title="Bulk import" action="import" width={600} use={Import} />
     </AbstractActions>
   );

@@ -87,7 +87,7 @@ const useAutoCompletiions = (editor: IAceEditor, autoCompletions: AutoCompletion
             });
           }
         }
-        completions.push({ meta: 'Get the environment variable value', value: 'getEnvVar' });
+        completions.push({ meta: 'Get the config variable value', value: 'getEnvVar' });
         callback(null, completions);
       },
     };

@@ -13,7 +13,7 @@
  */
 import 'reflect-metadata';
 
-export { Controller, Get, Post, Put, Delete, Body, Param, File } from './decorators';
+export { Controller, Get, Post, Body, Param, File, Req, Res, Public } from './decorators';
 export { UploadedFile } from './arguments';
 export { createServer } from './server';
 export type { Server, ServerOptions, UploadOptions } from './server';

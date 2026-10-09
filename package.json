@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "description": "In the beginning was the Great Origin the Way arose from the One dividing heaven and earth forming all things.",
-  "env": "test",
   "workspace": true,
   "workspaces": [
     "packages/*",
@@ -14,8 +13,10 @@
     "start": "cross-env NODE_ENV=development ts-node src/api/lowcode-api/index.ts",
     "dev:web": "cross-env NODE_ENV=development NODE_MODE=webonly ts-node src/api/lowcode-api/index.webonly.ts",
     "mock": "cross-env NODE_ENV=development NODE_MODE=mock ts-node src/api/lowcode-api/index.ts",
-    "typecheck": "tsc --noEmit",
-    "lint": "eslint \"{src,packages/*/src}/**/*.{ts,tsx}\"",
+    "db:migrate": "ts-node src/api/lowcode-api/migrate.ts",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.strict.json",
+    "test": "cross-env NODE_ENV=test node --test --require ts-node/register --require tsconfig-paths/register \"test/**/*.test.ts\"",
+    "lint": "eslint \"{src,packages/*/src,test}/**/*.{ts,tsx}\"",
     "lint:fix": "npm run lint -- --fix",
     "build": "npm run typecheck && rm -rf dist && npm run build:api && npm run build:web",
     "build:api": "npm run build -w lowcode-server -w lowcode-dev-proxy && tsc -p src/api/tsconfig.build.json --outDir dist/src/api",
@@ -25,8 +26,8 @@
     "lowcode"
   ],
   "peerDependencies": {
-    "sequelize": "^5.22.5",
-    "sequelize-typescript": "^1.1.0"
+    "sequelize": "^6.37.8",
+    "sequelize-typescript": "^2.1.6"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
@@ -85,6 +86,7 @@
     "ace-diff": "^3.3.0",
     "clsx": "^2.1.1",
     "core-js": "3.50.0",
+    "dompurify": "^3.4.16",
     "history": "^5.3.0",
     "lucide-react": "^1.48.0",
     "moment": "^2.31.0",
@@ -96,9 +98,12 @@
     "react-dnd-html5-backend": "16.0.1",
     "react-dom": "^19.3.0",
     "react-redux": "^9.3.0",
-    "react-router-dom": "^6.30.6",
+    "react-router-dom": "^7.18.4",
     "tailwind-merge": "^3.7.0",
     "workbox-precaching": "^7.4.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
 }

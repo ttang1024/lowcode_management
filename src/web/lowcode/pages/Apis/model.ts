@@ -10,27 +10,9 @@ import { createCrudModel, downloadJson, readJsonFile, withLoading } from '../sha
 
 export type RecordModel = OmitModel<ApisModel>
 
-const createApiMeta = (item: RecordModel) => {
-  return {
-    name: item.name,
-    contentType: item.contentType,
-    system: item.system,
-    id: item.id,
-    method: item.method,
-    path: item.path,
-    responseType: item.responseType,
-  } as ApiMetaModel;
-};
-
-// Add API metas to the published API resource, skipping names already present.
-async function publishApiMetas(rows: RecordModel[]) {
-  const items = await ResourceService.getApiResources();
-  rows.forEach((row) => {
-    if (!items.find((m) => m.name == row.name)) {
-      items.push(createApiMeta(row));
-    }
-  });
-  await ResourceService.saveApiResources(items);
+// Publish APIs to the runtime's API index (built on the server from the database).
+async function publishApis(names?: string[]) {
+  await ApisService.publishApis(names);
   apiConfig.setRefresh();
 }
 
@@ -79,11 +61,7 @@ const model = {
     },
     // Regenerate the API resource from every API (fine at the current scale)
     async buildApiResources(this: any) {
-      const response = await ApisService.queryAll();
-      if (response?.result?.length > 0) {
-        await ResourceService.saveApiResources(response.result.map(createApiMeta));
-      }
-      apiConfig.setRefresh();
+      await withLoading(publishApis());
       toast.success('API resources generated');
     },
     async updateAndBuildApi(this: any, api: RecordModel) {
@@ -93,24 +71,20 @@ const model = {
     },
     // Publish a single API into the API resource
     async buildApiResource(this: any, api: RecordModel) {
-      const items = await ResourceService.getApiResources();
-      const filtered = items.filter((m) => m.name != api.name);
-      filtered.push(createApiMeta(api));
-      await ResourceService.saveApiResources(filtered);
-      apiConfig.setRefresh();
+      await publishApis([api.name]);
       toast.success('API published');
     },
     // New APIs are published immediately
     async addRecordAsync(this: any, data: RecordModel) {
       const response = await withLoading(ApisService.addApi(data));
-      await publishApiMetas([response.result]);
+      await publishApis([response.result.name]);
       this.leaveAction({ message: 'Created successfully' });
     },
     // Imported APIs are published immediately
     async importApis(this: any, data: { file: UploadFileValue }) {
       const rows = await readJsonFile<ApisModel[]>(data.file);
       const response = await ApisService.importApis(rows);
-      await publishApiMetas(response.result);
+      await publishApis(response.result.map((api) => api.name));
       this.leaveAction({ message: 'Imported successfully' });
     },
     // Export the APIs matching the current query
@@ -147,6 +121,6 @@ const model = {
 
 export default model;
 
-export type ModelState = typeof model.state;
+type ModelState = typeof model.state;
 
 export type ModelProps = RematchModelTo<typeof model>;

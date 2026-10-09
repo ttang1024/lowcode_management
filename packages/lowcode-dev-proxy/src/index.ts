@@ -80,5 +80,3 @@ export function createDevProxy(options: DevProxyOptions = {}): RequestHandler {
     serveMock(req, res, mockDir).then((served) => served || next(), next);
   };
 }
-
-export default createDevProxy;

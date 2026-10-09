@@ -10,6 +10,7 @@ import AppContextService from './src/AppContextService';
 import PackageService from './src/PackageService';
 import EnvVariablesService from './src/EnvVariablesService';
 import CrossEnvApiService from './src/CrossEnvApiService';
+import AuthService from './src/AuthService';
 
 export {
   AppService,
@@ -24,4 +25,5 @@ export {
   PackageService,
   EnvVariablesService,
   CrossEnvApiService,
+  AuthService,
 };

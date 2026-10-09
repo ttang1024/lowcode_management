@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
-export interface TagGroupProps {
+interface TagGroupProps {
   value?: string[];
   onChange?: (value: string[]) => void;
   disabled?: boolean;

@@ -13,7 +13,9 @@ export type HttpVerb = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export type ParamSource =
   | { from: 'body' }
   | { from: 'param', name: string }
-  | { from: 'file', name: string };
+  | { from: 'file', name: string }
+  | { from: 'req' }
+  | { from: 'res' };
 
 interface RouteMeta {
   verb: HttpVerb;
@@ -26,6 +28,8 @@ export interface ControllerRoute extends RouteMeta {
   params: (ParamSource | undefined)[];
   /** Declared parameter types (from `emitDecoratorMetadata`), used for coercion. */
   types: any[];
+  /** Reachable without authentication (`@Public()` on the method or its controller). */
+  public: boolean;
 }
 
 export interface ControllerDefinition {
@@ -36,12 +40,28 @@ export interface ControllerDefinition {
 const PREFIX = Symbol('lowcode-server:prefix');
 const ROUTES = Symbol('lowcode-server:routes');
 const PARAMS = Symbol('lowcode-server:params');
+const PUBLIC = Symbol('lowcode-server:public');
 
 /** Marks a class as a controller whose routes live under `prefix`. */
 export function Controller(prefix = ''): ClassDecorator {
   return (target) => {
     Reflect.defineMetadata(PREFIX, prefix, target);
   };
+}
+
+/**
+ * Lets a route skip the server's `authenticate` check. On a class it covers
+ * every route of the controller; on a method, just that route. Routes are
+ * private by default, so a new controller is never accidentally left open.
+ */
+export function Public(): ClassDecorator & MethodDecorator {
+  return ((target: any, handler?: string | symbol) => {
+    if (handler === undefined) {
+      Reflect.defineMetadata(PUBLIC, true, target);
+    } else {
+      Reflect.defineMetadata(PUBLIC, true, target.constructor, String(handler));
+    }
+  }) as ClassDecorator & MethodDecorator;
 }
 
 function route(verb: HttpVerb) {
@@ -54,8 +74,6 @@ function route(verb: HttpVerb) {
 
 export const Get = route('GET');
 export const Post = route('POST');
-export const Put = route('PUT');
-export const Delete = route('DELETE');
 
 function param(source: ParamSource): ParameterDecorator {
   return (proto, handler, index) => {
@@ -80,6 +98,12 @@ export function File(name: string): ParameterDecorator {
   return param({ from: 'file', name });
 }
 
+/** Binds the Express request. */
+export const Req: ParameterDecorator = param({ from: 'req' });
+
+/** Binds the Express response, e.g. to set a cookie; the handler's return value is still sent. */
+export const Res: ParameterDecorator = param({ from: 'res' });
+
 function joinPath(...parts: string[]): string {
   const joined = ('/' + parts.join('/')).replace(/\/{2,}/g, '/');
   return joined.length > 1 ? joined.replace(/\/$/, '') : joined;
@@ -91,6 +115,7 @@ export function readController(ctor: any): ControllerDefinition | null {
   if (prefix === undefined) return null;
   const routes: RouteMeta[] = Reflect.getOwnMetadata(ROUTES, ctor) || [];
   const params: Record<string, ParamSource[]> = Reflect.getOwnMetadata(PARAMS, ctor) || {};
+  const publicController = Reflect.getOwnMetadata(PUBLIC, ctor) === true;
   return {
     prefix,
     routes: routes.map((r) => ({
@@ -98,6 +123,7 @@ export function readController(ctor: any): ControllerDefinition | null {
       path: joinPath(prefix, r.path),
       params: params[r.handler] || [],
       types: Reflect.getMetadata('design:paramtypes', ctor.prototype, r.handler) || [],
+      public: publicController || Reflect.getOwnMetadata(PUBLIC, ctor, r.handler) === true,
     })),
   };
 }

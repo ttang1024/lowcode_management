@@ -16,22 +16,22 @@ const ENV_TYPES = [
 
 const placeholderMappihngs = {
   'API': 'Please enter the base path of the current API service',
-  'SYS': 'Please enter the environment variable value',
+  'SYS': 'Please enter the config variable value',
 };
 
 const extraNodes = {
   'API': 'Base path for all APIs under the specified API system',
-  'SYS': 'non-API environment variable',
+  'SYS': 'Non-API config variable',
 };
 
-export interface OptionsRecordProps extends RecordViewProps<RecordModel> { }
+interface OptionsRecordProps extends RecordViewProps<RecordModel> { }
 
 export default function OptionsRecord(_props: OptionsRecordProps) {
   // Validation rules
   const rules: AbstractRules = {
     type: [{ required: true, message: 'Please choose a type' }],
     name: [{ required: true, message: 'Please enter a name' }],
-    value: [{ required: true, message: 'Please set the environment variable value' }],
+    value: [{ required: true, message: 'Please set the config variable value' }],
   };
 
   // Form

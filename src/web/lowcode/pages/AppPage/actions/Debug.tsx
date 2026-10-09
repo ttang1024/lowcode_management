@@ -7,7 +7,7 @@ import { AbstractForm, AdvancePicker } from 'lowcode-blocks';
 import type { AbstractGroups, AbstractRules, RecordViewProps } from 'lowcode-blocks/src/interface';
 import type { RecordModel } from '../model';
 
-export interface AppPageDebugProps extends RecordViewProps<RecordModel> {
+interface AppPageDebugProps extends RecordViewProps<RecordModel> {
   app: AppConfigurerModel
 }
 

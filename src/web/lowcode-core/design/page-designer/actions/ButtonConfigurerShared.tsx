@@ -12,7 +12,7 @@ import { type ContextScenario, useScenarioCompletions } from '../components/cont
 type BaseButtonModel = Omit<TableButtonModel, 'select' | 'target'>;
 
 // Validation rules
-export function createButtonRules(): AbstractRules {
+function createButtonRules(): AbstractRules {
   return {
     title: [
       ruler.getRule('chooiceRequired', { config: ['title', 'icon'], message: 'Please set at least a button title or icon' }),

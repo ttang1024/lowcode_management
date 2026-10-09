@@ -1,6 +1,7 @@
 import type { EnvironmentModel as Model } from 'lowcode-api/models';
 import type { GeneralPagedResult, GeneralResult } from 'lowcode-api/framework';
 import ApiService from './ApiService';
+import ResourceService from './ResourceService';
 
 export type EnvironmentModel = OmitModel<Model>
 
@@ -35,6 +36,11 @@ class EnvVariablesService extends ApiService {
 
   importVariables(models) {
     return this.any<GeneralResult<EnvironmentModel[]>>('/env/variables/import', models, 'POST').json();
+  }
+
+  /** Publish this environment's variables as the env file the runtime reads (a public file). */
+  publishVariables() {
+    return this.post<GeneralResult<{ count: number }>>('/env/variables/publish', { storeDir: ResourceService.storeDir }).json();
   }
 }
 export default new EnvVariablesService();

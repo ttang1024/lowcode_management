@@ -1,13 +1,15 @@
 import './polyfill';
 import config from 'lowcode-configs';
 import { toast } from 'lowcode-kit';
-import { Network, Config, BizError } from 'lowcode-common';
+import { Network, Config, BizError, RESEND } from 'lowcode-common';
 import type { GeneralResult } from 'lowcode-api/framework';
+import { AuthService } from 'lowcode-services';
 
 // Global config
 Config.setup({
   fileGateway: {
-    data: { bizId: 'lowcode', storeDir: 'lowcode-web' + config.OSS_SUFFIX },
+    // Uploads land under uploads/<storeDir>/ with a server-chosen name (see ResourceController).
+    data: { storeDir: 'lowcode-web' + config.OSS_SUFFIX },
     // File upload URL
     uploadUrl: config.FILEGW,
     // File access URL
@@ -53,6 +55,8 @@ Network
     loading: (text?: string) => toast.loading(text || 'Loading…'),
   })
   .on('error', (e: BizError) => {
+    // The sign-in screen replaces the toast for an expired session.
+    if (e.code === AuthService.AUTH_REQUIRED) return;
     const description = e.data?.errorMsg || e.message || '';
     toast.error('Request failed', description || 'The network request failed. Please try again.');
   })
@@ -61,7 +65,18 @@ Network
     if (context.responseConvert !== 'json') return response;
     // A body of `null` (or a non-object) has no success flag to check.
     const success = response && typeof response === 'object' && 'success' in response ? response.success : true;
+    if (!success && String(response.errorCode) === AuthService.AUTH_REQUIRED) {
+      AuthService.notifyUnauthorized();
+      // In the studio the sign-in overlay is showing: hold the call and send it
+      // again once the user has signed back in, so their action still completes.
+      if (AuthService.canPromptSignIn) {
+        await AuthService.waitForSignIn();
+        return RESEND;
+      }
+      return Promise.reject(new BizError(AuthService.AUTH_REQUIRED, response.errorMsg));
+    }
     // Async API support
     response = await pullAsyncApiResult(response, context.extra?.asyncApi);
-    return success ? response : Promise.reject(new BizError(response.errorCode, response.errorMsg));
+    // The rejected response rides along as `data` (e.g. the newer version on a publish CONFLICT).
+    return success ? response : Promise.reject(new BizError(response.errorCode, response.errorMsg, response));
   });

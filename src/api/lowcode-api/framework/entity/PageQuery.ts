@@ -1,4 +1,24 @@
-import { type FindAndCountOptions, Op } from 'sequelize';
+import { type FindAndCountOptions, type FindOptions, type ModelStatic, type Model, Op } from 'sequelize';
+
+/** Largest page a client may request (option pickers load up to 1000 entries). */
+export const MAX_PAGE_SIZE = 1000;
+
+/** Columns a client may never filter on: `env` is the pre/prod isolation boundary. */
+const UNFILTERABLE = new Set(['env']);
+
+type Primitive = string | number | boolean;
+
+function isPrimitive(value: unknown): value is Primitive {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+}
+
+/**
+ * Only plain values (or arrays of them) are accepted as filter values, so a
+ * client can never smuggle an operator object or nested condition into `where`.
+ */
+function isFilterValue(value: unknown): value is Primitive | Primitive[] {
+  return isPrimitive(value) || (Array.isArray(value) && value.every(isPrimitive));
+}
 
 /** Paginated query entity */
 export default class PageQuery<T = any> {
@@ -7,10 +27,10 @@ export default class PageQuery<T = any> {
   }
 
   /** Current page value */
-  public pageNo: number;
+  public pageNo!: number;
 
   /** Page value */
-  public pageSize: number;
+  public pageSize!: number;
 
   /** Query parameters */
   public query?: T;
@@ -19,71 +39,75 @@ export default class PageQuery<T = any> {
 
   public order?: string;
 
-  static createQueryRule(op: any, value: any, where: any, key: string) {
+  static createQueryRule(op: symbol, value: Primitive | Primitive[], where: Record<string | symbol, any>, key: string) {
     if (op == Op.like) {
-      const query = {} as Record<typeof Op.or, any>;
-      const values = value instanceof Array ? value : value?.split(',');
-      where[Op.and] = [query];
-      query[Op.or] = values.map((item: string) => {
-        return {
-          [key]: {
-            [Op.like]: `%${String(item)}%`,
-          },
-        };
-      });
+      const values = Array.isArray(value) ? value : String(value).split(',');
+      const or = values.map((item) => ({ [key]: { [Op.like]: `%${String(item)}%` } }));
+      where[Op.and] = [...(where[Op.and] || []), { [Op.or]: or }];
+    } else if (op == Op.between) {
+      if (Array.isArray(value) && value.length === 2) where[key] = { [Op.between]: value };
     } else {
-      where[key] = {
-        [op]: value,
-      };
+      where[key] = { [op]: value };
     }
   }
 
-  static createQuery(pageQuery: PageQuery, opOption?: { [propName: string]: any }, order?: any[]) {
-    const { pageNo, pageSize } = pageQuery;
-    const page = isNaN(pageNo) ? 1 : pageNo;
-    const limit = isNaN(pageSize) ? 10 : (pageSize < 1 ? 10 : pageSize);
-    opOption = opOption || {};
-    if (pageQuery.query) {
-      delete pageQuery.query.current;
-      delete pageQuery.query.pageSize;
-    }
+  /**
+   * Builds a paginated query for `model`. `pageSize` is capped at
+   * {@link MAX_PAGE_SIZE}; see {@link createUnlimitQuery} for the filters.
+   */
+  static createQuery(model: ModelStatic<Model>, pageQuery: PageQuery, opOption?: Record<string, symbol>, order?: any[]) {
+    const pageNo = Math.floor(Number(pageQuery?.pageNo));
+    const pageSize = Math.floor(Number(pageQuery?.pageSize));
+    const page = pageNo >= 1 ? pageNo : 1;
+    const limit = pageSize >= 1 ? Math.min(pageSize, MAX_PAGE_SIZE) : 10;
     return {
-      limit: limit,
+      limit,
       offset: (page - 1) * limit,
-      ...(this.createUnlimitQuery(pageQuery, opOption, order)),
+      ...(this.createUnlimitQuery(model, pageQuery, opOption, order)),
     } as FindAndCountOptions;
   }
 
-  static createUnlimitQuery(pageQuery: PageQuery, opOption?: { [propName: string]: any }, order?: any[]) {
-    const query = pageQuery.query;
-    return {
-      order: order,
-      where: Object.keys(query || {}).reduce((where: Record<string, any>, key) => {
-        const v = query[key];
-        if (v !== '' && v !== null && v !== undefined) {
-          const op = opOption[key];
-          if (op) {
-            this.createQueryRule(op, v, where, key);
-          } else {
-            where[key] = v;
-          }
-        }
-        return where;
-      }, {}),
-    } as FindAndCountOptions;
+  /**
+   * Builds `where` from `pageQuery.query`. Only the model's own columns (never
+   * `env`) with plain values are used; anything else is ignored. `opOption`
+   * picks an operator per column (`Op.like` takes comma-separated values,
+   * `Op.between` a two-element array); other columns match by equality.
+   */
+  static createUnlimitQuery(model: ModelStatic<Model>, pageQuery: PageQuery, opOption: Record<string, symbol> = {}, order?: any[]) {
+    const query = (pageQuery?.query || {}) as Record<string, unknown>;
+    const columns = model.getAttributes();
+    const where: Record<string | symbol, any> = {};
+    for (const key of Object.keys(query)) {
+      const value = query[key];
+      if (value === '' || value === null || value === undefined) continue;
+      if (!(key in columns) || UNFILTERABLE.has(key) || !isFilterValue(value)) continue;
+      const op = opOption[key];
+      if (op) {
+        this.createQueryRule(op, value, where, key);
+      } else if (!Array.isArray(value)) {
+        where[key] = value;
+      }
+    }
+    return { order, where } as FindOptions;
+  }
+
+  /** Page number and size as the paged result should report them. */
+  static pageOf(options: FindAndCountOptions) {
+    const limit = options.limit || 10;
+    return { pageNo: Math.floor((options.offset || 0) / limit) + 1, pageSize: limit };
   }
 }
 
 /** Cross-environment paginated query entity */
 export class EnvPageQuery<T = any> {
   /** environment */
-  public env: string;
+  public env!: string;
 
   /** Current page value */
-  public pageNo: number;
+  public pageNo!: number;
 
   /** Page value */
-  public pageSize: number;
+  public pageSize!: number;
 
   /** Query parameters */
   public query?: T;

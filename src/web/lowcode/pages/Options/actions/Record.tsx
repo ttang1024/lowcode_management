@@ -15,7 +15,7 @@ const DATA_TYPES = [
   { label: 'JSON', value: 1 },
 ];
 
-export interface OptionsRecordProps extends RecordViewProps<RecordModel> { }
+interface OptionsRecordProps extends RecordViewProps<RecordModel> { }
 
 export default function OptionsRecord(_props: OptionsRecordProps) {
   const columns: AbstractEColumns<OptionItemValue> = [

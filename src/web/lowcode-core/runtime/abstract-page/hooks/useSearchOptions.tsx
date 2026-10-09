@@ -1,7 +1,7 @@
 import React from 'react';
 import { AbstractIcon } from 'lowcode-blocks';
 import { Search, Trash2 } from 'lucide-react';
-import type { AbstractSearchProps } from 'lowcode-blocks/src/abstract-search';
+import type { AbstractSearchProps } from 'lowcode-blocks';
 import { getInitialValue } from 'lowcode-ui/src/initialvalue-setting';
 
 type AbstractSearchOptions = Partial<AbstractSearchProps<any>>

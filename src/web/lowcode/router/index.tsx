@@ -8,6 +8,7 @@ import { NotFoundView } from 'lowcode-blocks';
 import { AbstractLayout, LowcodeDesigner, AbstractPage } from 'lowcode-core';
 import Layout from '../layouts';
 import DesignerShell from '../layouts/DesignerShell';
+import AuthGate from '../layouts/AuthGate';
 import { PopupRoute } from 'lowcode-ui';
 import { RegistryContext, type RegistryContextValue } from 'lowcode-registry';
 import { openDiffer } from 'lowcode-ui/src/diff-view';
@@ -87,17 +88,14 @@ function AdminArea() {
   );
 }
 
-// Opt in to the React Router v7 behaviours now (this also silences the warnings).
-const ROUTER_FUTURE = { v7_startTransition: true, v7_relativeSplatPath: true };
-
 export default function ReduxRouter() {
   return (
-    <BrowserRouter future={ROUTER_FUTURE}>
+    <BrowserRouter>
       <AppContext>
         <Routes>
           <Route path="/" element={<Navigate to="/admin/overview" replace />} />
-          <Route path="/design/*" element={<DesignArea />} />
-          <Route path="/admin/*" element={<AdminArea />} />
+          <Route path="/design/*" element={<AuthGate><DesignArea /></AuthGate>} />
+          <Route path="/admin/*" element={<AuthGate><AdminArea /></AuthGate>} />
           <Route path="*" element={<NotFoundView />} />
         </Routes>
       </AppContext>
@@ -115,7 +113,7 @@ PopupRoute.register((pathname: string) => {
   return (
     <LocationContext.Provider value={null}>
       <RouteContext.Provider value={ROOT_ROUTE_CONTEXT}>
-        <MemoryRouter initialEntries={[location]} initialIndex={0} future={ROUTER_FUTURE}>
+        <MemoryRouter initialEntries={[location]} initialIndex={0}>
           <Routes>
             <Route path="/admin/options/:action?/:id?" element={<Options />} />
             <Route path="/admin/apis/:action?/:id?" element={<Apis />} />

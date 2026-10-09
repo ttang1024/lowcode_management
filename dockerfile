@@ -29,7 +29,7 @@ EXPOSE 8080
 
 # Load balancer target groups and App Runner should probe the same path.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health/check', (r) => process.exit(r.statusCode == 200 ? 0 : 1)).on('error', () => process.exit(1))"
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 8080) + '/health/check', (r) => process.exit(r.statusCode == 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
 ENTRYPOINT [ "tini", "--" ]
 CMD [ "node", "src/api/lowcode-api/index.js" ]

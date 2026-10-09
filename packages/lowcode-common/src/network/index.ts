@@ -54,6 +54,14 @@ export class BizError extends Error {
 
 type Handler = (...args: any[]) => any;
 
+/**
+ * A `response` handler may return this to have the request sent again, e.g.
+ * once the user has signed back in after their session expired. A request is
+ * retried at most {@link MAX_RESENDS} times this way.
+ */
+export const RESEND = Symbol('network:resend');
+const MAX_RESENDS = 2;
+
 function buildQuery(data: any): string {
   if (!data) return '';
   const params = Object.keys(data)
@@ -146,15 +154,6 @@ export class RequestBuilder<T = any> implements PromiseLike<T> {
     return this;
   }
 
-  /**
-   * Mark the request as shareable. The original client deduped identical
-   * concurrent requests; this build executes normally (no dedupe), which is
-   * behaviourally equivalent aside from the optimisation.
-   */
-  shared(): this {
-    return this;
-  }
-
   cancel(): void {
     this.controller?.abort();
   }
@@ -173,7 +172,7 @@ export class RequestBuilder<T = any> implements PromiseLike<T> {
     const wantsLoading = this.loadingText !== undefined && !this.isSilent;
     const dismiss = wantsLoading && config.loading ? config.loading(this.loadingText) : undefined;
 
-    const run = async(): Promise<T> => {
+    const run = async(): Promise<T | typeof RESEND> => {
       const isGet = /GET|HEAD/i.test(this.method);
       const url = resolveUrl(config.base, this.url) + (isGet ? buildQuery(this.data) : '');
       const headers: Record<string, string> = Array.isArray(this.headers) ?
@@ -208,17 +207,32 @@ export class RequestBuilder<T = any> implements PromiseLike<T> {
       // Allow registered response handlers to transform / reject the payload.
       for (const onResponse of this.network.getHandlers('response')) {
         payload = await onResponse(payload, context);
+        if (payload === RESEND) return RESEND;
+      }
+      // An HTTP error the handlers did not already turn into a rejection.
+      if (!response.ok) {
+        const message = (payload && typeof payload === 'object' && (payload.errorMsg || payload.message)) ||
+          `${response.status} ${response.statusText}`.trim();
+        throw new BizError(response.status, message, payload);
       }
       return payload as T;
     };
 
+    const send = async(): Promise<T> => {
+      for (let resends = 0; ; resends++) {
+        const result = await run();
+        if (result !== RESEND) return result as T;
+        if (resends >= MAX_RESENDS) throw new BizError(401, 'Request was not accepted after signing in again');
+      }
+    };
+
     try {
-      let result = await run();
+      let result = await send();
       if (this.retry) {
         let attempts = this.retry.max;
         while (attempts > 0 && this.retry.predicate(result)) {
           if (this.retry.delay) await new Promise((r) => setTimeout(r, this.retry!.delay));
-          result = await run();
+          result = await send();
           attempts--;
         }
       }
@@ -332,5 +346,3 @@ export class Network {
 
 /** Service base class — a {@link Network} with no extra behaviour by default. */
 export class Service extends Network {}
-
-export default Network;

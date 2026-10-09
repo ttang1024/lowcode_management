@@ -17,6 +17,4 @@ const model = createCrudModel<RecordModel>({
 
 export default model;
 
-export type ModelState = typeof model.state;
-
 export type ModelProps = RematchModelTo<typeof model>;

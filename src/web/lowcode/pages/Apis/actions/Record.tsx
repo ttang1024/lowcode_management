@@ -23,7 +23,7 @@ import { Link } from 'react-router-dom';
 
 const allowBody = ['POST', 'PUT'];
 
-export interface ApisRecordProps extends RecordViewProps<RecordModel> {
+interface ApisRecordProps extends RecordViewProps<RecordModel> {
   enterSubAction: (action: AbstractAction) => void
   apiPickerKey: string
 }
@@ -52,7 +52,7 @@ export default function ApisRecord(props: ApisRecordProps) {
           <Button onClick={onAddSys} variant="link" size="sm">System not listed? Add one</Button>
           <div>
             if needed, you can go to
-            <Link to="/admin/env/list">Environment variables</Link>
+            <Link to="/admin/env/list">Config variables</Link>
             Set a dedicated base path for the current system
           </div>
         </>

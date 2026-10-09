@@ -7,6 +7,7 @@
 import type { AppModel as Model } from 'lowcode-api/models';
 import type { GeneralPagedResult, GeneralResult } from 'lowcode-api/framework';
 import ApiService from './ApiService';
+import ResourceService from './ResourceService';
 
 type AppModel = OmitModel<Model>
 
@@ -86,19 +87,30 @@ class AppService extends ApiService {
   }
 
   /**
-   * Publish app
-   * NoneDescription
+   * Publish app: marks it online and updates its published index
    */
   updateAppOnline(data: AppModel) {
-    return this.any<GeneralResult<any>>('/app/online?id=' + data.id, {}, 'POST').json();
+    const query = { id: data.id, storeDir: ResourceService.storeDir };
+    return this.any<GeneralResult<any>>('/app/online?' + new URLSearchParams(query as any), {}, 'POST').json();
   }
 
   /**
-   * Unpublish app
-   * NoneDescription
+   * Unpublish app: marks it offline and updates its published index
    */
   updateAppOffline(data: AppModel) {
-    return this.any<GeneralResult<any>>('/app/offline?id=' + data.id, {}, 'POST').json();
+    const query = { id: data.id, storeDir: ResourceService.storeDir };
+    return this.any<GeneralResult<any>>('/app/offline?' + new URLSearchParams(query as any), {}, 'POST').json();
+  }
+
+  /**
+   * Save the layout designer's settings: name and logo go to the app record,
+   * the rest (layout, theme, menus) to its published index. Resolves to the merged index.
+   */
+  async mergeAppSettings(code: string, settings: Record<string, any>) {
+    const res = await this.post<GeneralResult<AppConfigurerModel>>('/app/config/merge', {
+      storeDir: ResourceService.storeDir, code, settings,
+    }).json();
+    return res.result;
   }
 
   /**
@@ -106,7 +118,8 @@ class AppService extends ApiService {
    * Resolves to the deleted app's code and page codes.
    */
   removeApp(id: number) {
-    return this.any<GeneralResult<{ code: string, pages: string[] }>>('/app/remove?id=' + id, {}, 'POST').json();
+    const query = { id, storeDir: ResourceService.storeDir };
+    return this.any<GeneralResult<{ code: string, pages: string[] }>>('/app/remove?' + new URLSearchParams(query as any), {}, 'POST').json();
   }
 
   /**

@@ -5,7 +5,7 @@ export type TemplateInputProps = InputProps
 
 export type TemplateTextAreaProps = TextareaProps
 
-export function TemplateTextArea(props: TemplateTextAreaProps) {
+function TemplateTextArea(props: TemplateTextAreaProps) {
   return <Textarea {...props} />;
 }
 

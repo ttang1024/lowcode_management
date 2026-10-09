@@ -13,7 +13,7 @@ import config from 'lowcode-configs';
 
 const DEFAULT_LOGO = `${config.CDN}/lowcode/resources/lowcode/logo.jpeg`;
 
-export interface AppRecordProps extends RecordViewProps<RecordModel> { }
+interface AppRecordProps extends RecordViewProps<RecordModel> { }
 
 export default function AppRecord(props: AppRecordProps) {
   // Validation rules

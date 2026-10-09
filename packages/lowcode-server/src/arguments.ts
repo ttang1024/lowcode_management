@@ -4,7 +4,7 @@
  */
 import fs from 'fs';
 import path from 'path';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import type { ControllerRoute } from './decorators';
 
 /** A file received in a multipart request. */
@@ -54,7 +54,7 @@ function buildBody(type: any, body: unknown) {
   }
 }
 
-export function resolveArguments(route: ControllerRoute, req: Request): unknown[] {
+export function resolveArguments(route: ControllerRoute, req: Request, res: Response): unknown[] {
   const count = Math.max(route.params.length, route.types.length);
   const files = (req.files || []) as Express.Multer.File[];
   const query = req.query as Record<string, unknown>;
@@ -75,6 +75,12 @@ export function resolveArguments(route: ControllerRoute, req: Request): unknown[
         args.push(file ? new UploadedFile(file) : undefined);
         break;
       }
+      case 'req':
+        args.push(req);
+        break;
+      case 'res':
+        args.push(res);
+        break;
       default:
         args.push(undefined);
     }

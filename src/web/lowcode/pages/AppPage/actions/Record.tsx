@@ -9,7 +9,7 @@ import type { AbstractGroups, AbstractRules, RecordViewProps } from 'lowcode-blo
 import type { RecordModel } from '../model';
 import { IconPicker } from 'lowcode-blocks';
 
-export interface AppPageRecordProps extends RecordViewProps<RecordModel> {
+interface AppPageRecordProps extends RecordViewProps<RecordModel> {
   app: AppConfigurerModel
 }
 

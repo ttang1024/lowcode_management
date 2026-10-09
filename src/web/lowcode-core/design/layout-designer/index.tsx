@@ -2,7 +2,7 @@ import { AbstractActions } from 'lowcode-blocks';
 import React, { useMemo, useRef, useState } from 'react';
 import { type AbstractDesignerProps, NeedUpdater } from '../abstract-designer';
 import Setting from './actions/Setting';
-import { ResourceService } from 'lowcode-services';
+import { AppService } from 'lowcode-services';
 
 export interface LayoutDesignerProps extends AbstractDesignerProps<AppConfigurerModel, any> {
   type: 'layout'
@@ -42,7 +42,7 @@ export default function LayoutDesigner(props: LayoutDesignerProps) {
     try {
       const values = { ...props.data, ...action.model };
       setLoading(true);
-      await ResourceService.mergeAppResource(values, action.model);
+      await AppService.mergeAppSettings(values.code, action.model);
       setLoading(false);
       setInitialValue(values);
       props.onSubmit(values);

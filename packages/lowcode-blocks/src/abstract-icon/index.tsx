@@ -15,7 +15,7 @@ export interface AbstractIconContextValue {
   url?: string;
 }
 
-export const AbstractIconContext = React.createContext<AbstractIconContextValue>({});
+const AbstractIconContext = React.createContext<AbstractIconContextValue>({});
 
 export interface AbstractIconProps {
   type?: string;

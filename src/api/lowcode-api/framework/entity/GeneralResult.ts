@@ -19,7 +19,7 @@ export default class GeneralResult<T = any> {
   /**
    * Returned message
    */
-  public errorMsg: string;
+  public errorMsg?: string;
 
   /**
    * Returned data

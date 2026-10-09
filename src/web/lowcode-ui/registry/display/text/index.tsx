@@ -1,4 +1,5 @@
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { cn } from 'lowcode-kit';
 import { component } from 'lowcode-registry';
 import { dispatcher } from 'lowcode-core';
@@ -12,6 +13,15 @@ export interface RuntimeProps {
   format?: string
 }
 
+/**
+ * Text can carry simple markup (e.g. `<b>` from a formatter), but values often
+ * come straight from API responses, so scripts, event handlers and
+ * `javascript:` links are stripped before rendering.
+ */
+function sanitize(html: unknown) {
+  return DOMPurify.sanitize(html === undefined || html === null ? '' : String(html));
+}
+
 function TextRuntime({ format, ...props }: RuntimeProps) {
   const creator = component.useCreator();
   const content = props.value || props.content || '';
@@ -21,7 +31,7 @@ function TextRuntime({ format, ...props }: RuntimeProps) {
     <div
       className={cn('text-runtime py-1 text-sm leading-[1.5715] text-slate-800', props.ellipsis && 'w-full truncate')}
       style={props.style}
-      dangerouslySetInnerHTML={{ __html: value?.toString() }}
+      dangerouslySetInnerHTML={{ __html: sanitize(value) }}
     >
     </div>
   );

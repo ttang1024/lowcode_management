@@ -5,7 +5,7 @@ import config from 'lowcode-configs';
 import { Button, cn } from 'lowcode-kit';
 import type { NavItem } from './menu';
 
-export interface TopbarProps {
+interface TopbarProps {
   current?: NavItem;
   pathname: string;
   /** Opens the navigation drawer; only set on compact screens. */

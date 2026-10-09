@@ -14,7 +14,7 @@ export interface ChildAppProvider {
   isHashRouter: boolean
 }
 
-export class AppContextService extends Network {
+class AppContextService extends Network {
   private context: RegistryContextValue = { name: '' };
 
   /**

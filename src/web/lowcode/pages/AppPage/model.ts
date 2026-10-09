@@ -75,14 +75,11 @@ const model = {
     },
     async removeRecordAsync(this: any, data: RecordModel) {
       await withLoading(AppPageService.removeAppPage(data.id));
-      await AppPageService.updateAppPageOffline(data);
       this.leaveAction({ message: 'Deleted successfully' });
     },
   },
 };
 
 export default model;
-
-export type ModelState = typeof model.state;
 
 export type ModelProps = RematchModelTo<typeof model>;

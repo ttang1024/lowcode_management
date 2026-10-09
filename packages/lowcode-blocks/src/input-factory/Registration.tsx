@@ -33,5 +33,3 @@ export class Registrations<T extends RegistrationBase = RegistrationBase> {
     return Array.from(this.items.values());
   }
 }
-
-export default Registrations;

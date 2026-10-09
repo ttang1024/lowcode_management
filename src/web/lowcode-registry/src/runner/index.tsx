@@ -15,7 +15,7 @@ export const registerApplication = (App: GyApplication) => {
   runtime.GyApplication = App;
 };
 
-export function renderApplication({ root, ...props }: RegistryContextValue & { root: HTMLElement }) {
+function renderApplication({ root, ...props }: RegistryContextValue & { root: HTMLElement }) {
   const appRef = React.createRef<ApplicationRunner>();
   const appInstance = createRoot(root);
   appInstance.render(<ApplicationRunner {...props} ref={appRef} />);

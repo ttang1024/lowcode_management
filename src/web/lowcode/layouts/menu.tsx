@@ -12,7 +12,7 @@ export interface NavItem {
   match: RegExp;
 }
 
-export interface NavGroup {
+interface NavGroup {
   title: string;
   items: NavItem[];
 }
@@ -74,7 +74,7 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         key: 'env',
-        title: 'Environment',
+        title: 'Config variables',
         description: 'Variables resolved at runtime by published apps.',
         icon: <SlidersHorizontal size="1em" />,
         href: '/admin/env/list',
@@ -84,7 +84,7 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-export const navItems: NavItem[] = navGroups.flatMap((g) => g.items);
+const navItems: NavItem[] = navGroups.flatMap((g) => g.items);
 
 export function findNavItem(pathname: string): NavItem | undefined {
   return navItems.find((item) => item.match.test(pathname));

@@ -1,8 +1,12 @@
+import { Op } from 'sequelize';
 import { Controller, Get, Post, Body, Param } from 'lowcode-server';
 import { OptionsModel } from '../models';
-import { GeneralPagedResult, GeneralResult, PageQuery } from '../framework';
-import { Op } from 'sequelize';
-import { syncRecord } from './sync';
+import { GeneralResult, PageQuery } from '../framework';
+import { exportAll, importRecords, pagedList, syncRecord, writable } from '../framework/crud';
+import { HttpError, requireId } from '../framework/errors';
+
+const LIST_OPS = { name: Op.like, code: Op.like };
+const ORDER = [['updatedAt', 'DESC']];
 
 /** Dictionary management */
 @Controller('/options')
@@ -10,14 +14,11 @@ export default class OptionsController {
   /** Add dictionary */
   @Post('/add')
   async addOption(@Body data: OptionsModel) {
-    const response = await OptionsModel.create({
-      ...data.toJSON(),
-      'updatedAt': new Date(),
-    });
+    const response = await OptionsModel.create(writable(OptionsModel, data));
     return GeneralResult.success(response);
   }
 
-  /** Edit dictionary */
+  /** Edit dictionary (the code is its key across environments, so it is fixed) */
   @Post('/update')
   async updateOption(@Body data: OptionsModel) {
     const model = await OptionsModel.update(
@@ -25,7 +26,7 @@ export default class OptionsController {
         name: data.name,
         value: data.value,
       } as OptionsModel,
-      { where: { id: data.id } },
+      { where: { id: requireId(data.id) } },
     );
     return GeneralResult.success(model);
   }
@@ -33,78 +34,45 @@ export default class OptionsController {
   /** Get the given dictionary */
   @Get('/detail')
   async findOption(@Param('id') id: number) {
-    const model = await OptionsModel.findByPk(id);
+    const model = await OptionsModel.findByPk(requireId(id));
     return GeneralResult.success(model);
   }
 
   /** Get the dictionary by code */
   @Get('/find')
   async findOptionByCode(@Param('code') code: string) {
-    const model = await OptionsModel.findOne({ where: { code } });
+    if (!code) throw new HttpError(400, 'A dictionary code is required');
+    const model = await OptionsModel.findOne({ where: { code: String(code) } });
     return GeneralResult.success(model);
   }
 
   /** Paginated query of the dictionary list */
   @Post('/list')
   async pagedQueryOptions(@Body data: PageQuery) {
-    return this.pagedQuery(data, {}, ['id', 'name', 'code', 'type']);
-  }
-
-  /** Export dictionary data for the given criteria */
-  @Post('/export')
-  async exportQueriedOptions(@Body data: PageQuery) {
-    const rule = PageQuery.createUnlimitQuery(
-      data,
-      {
-        name: Op.like,
-        code: Op.like,
-      },
-      [['updatedAt', 'DESC']],
-    );
-    rule.attributes = [
-      'code', 'name', 'type', 'value',
-    ];
-    const models = await OptionsModel.findAll(rule);
-    return GeneralResult.success(models);
-  }
-
-  /** Import dictionary data */
-  @Post('/import')
-  async importOptions(@Body models: OptionsModel[]) {
-    await OptionsModel.bulkCreate(models, {
-      ignoreDuplicates: true,
-      updateOnDuplicate: ['name', 'type', 'value'],
-    });
-    return GeneralResult.success(models);
+    return pagedList(OptionsModel, data, { ops: LIST_OPS, order: ORDER, attributes: ['id', 'name', 'code', 'type'] });
   }
 
   /** Cross-environment paginated query of the dictionary list */
   @Post('/cross/list')
   async pagedQueryCrossOptions(@Body data: PageQuery) {
-    return this.pagedQuery(data, { updatedAt: Op.between });
+    return pagedList(OptionsModel, data, { ops: { ...LIST_OPS, updatedAt: Op.between }, order: ORDER });
   }
 
-  private async pagedQuery(data: PageQuery, extraOps = {}, attributes?: string[]) {
-    const rule = PageQuery.createQuery(
-      data,
-      {
-        name: Op.like,
-        code: Op.like,
-        ...extraOps,
-      },
-      [['updatedAt', 'DESC']],
-    );
-    if (attributes) {
-      rule.attributes = attributes;
-    }
-    const response = await OptionsModel.findAndCountAll(rule);
-    return GeneralPagedResult.success(response, data.pageNo, data.pageSize);
+  /** Export dictionary data for the given criteria */
+  @Post('/export')
+  async exportQueriedOptions(@Body data: PageQuery) {
+    return exportAll(OptionsModel, data, { ops: LIST_OPS, order: ORDER, attributes: ['code', 'name', 'type', 'value'] });
   }
 
-  /** Sync dictionary */
+  /** Import dictionary data; an existing code updates its values */
+  @Post('/import')
+  async importOptions(@Body models: unknown) {
+    return importRecords(OptionsModel, models, ['name', 'type', 'value']);
+  }
+
+  /** Sync a dictionary from another environment, matched by code */
   @Post('/sync')
   async syncOption(@Body data: OptionsModel) {
-    const find = await OptionsModel.findOne({ where: { code: data.code } });
-    return syncRecord(find, data, (d) => this.updateOption(d), (d) => this.addOption(d));
+    return syncRecord(OptionsModel, data, { code: data?.code }, (d) => this.updateOption(d), (d) => this.addOption(d));
   }
 }

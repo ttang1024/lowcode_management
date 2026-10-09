@@ -13,7 +13,7 @@ import type { AbstractTableProps } from 'lowcode-blocks/src/abstract-table/types
 import type { SyncButtonProps, SyncRowModel } from 'lowcode-ui/src/sync-table-view/SyncButton';
 import { DateRangeInput, DescriptionList } from 'lowcode-kit';
 
-export interface CrossEnvSyncProps<T> {
+interface CrossEnvSyncProps<T> {
   title: string;
   /** Filters shown after the time range. */
   extraFilters?: AbstractSFields;

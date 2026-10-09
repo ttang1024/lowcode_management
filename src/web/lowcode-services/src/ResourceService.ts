@@ -3,11 +3,11 @@
  * @description Resource service: generates resource files for apps and pages
  */
 
-import { Network, Oss } from 'lowcode-common';
+import { Oss } from 'lowcode-common';
+import type { GeneralResult } from 'lowcode-api/framework';
 import lowcodeConfigs, { createEnvHostUrl, getEnvOssSuffix } from 'lowcode-configs';
+import ApiService from './ApiService';
 import PersistentService from './PersistentService';
-
-export type onUploadProgress = (percent: number) => void
 
 export type ResolveConflictHandler = (cache: PageConfigurerModel, latest: PageConfigurerModel) => Promise<PageConfigurerModel>
 
@@ -19,7 +19,7 @@ const pagePersistent = new PersistentService('page_designer');
 // Because the pre-Releaseossis the same as production, the pre-Release resources must be isolated
 const storeDir = createStoreDir(lowcodeConfigs.OSS_SUFFIX);
 
-class ResourceService extends Network {
+class ResourceService extends ApiService {
   /**
    * Get the app resource URL
    * @param code
@@ -68,21 +68,9 @@ class ResourceService extends Network {
     return `${storeDir}/api/api-${id}.json`;
   }
 
-  /**
-   * Upload resource file
-   * @param name Resource name
-   * @param content Resource content
-   */
-  saveResource(name: string, content: Blob, cache = 'no-cache', onprogress: onUploadProgress = null) {
-    const file = new File([content], name);
-    name = name.replace(new RegExp(`^${storeDir}/`), '');
-    return Oss.uploadToAliOss(file, {
-      storeDir: '',
-      bizId: 'lowcode',
-      cacheType: cache as any,
-      name: name,
-      overlaySameFile: true,
-    }, onprogress);
+  /** Top folder of the published files (`lowcode`, or `lowcode-pre` for pre-release). */
+  get storeDir() {
+    return storeDir;
   }
 
   /**
@@ -101,43 +89,14 @@ class ResourceService extends Network {
   }
 
   /**
-   * Merge app config data
-   */
-  async mergeAppResource(data: Partial<AppConfigurerModel>, other?: Record<string, any>) {
-    const appCode = data.code;
-    const response = await this.getAppResource(appCode);
-    const config = {
-      ...response,
-      ...(other || {}),
-      name: data.name,
-      logo: data.logo,
-      iconUrl: data.iconUrl,
-      code: appCode,
-      home: data.home,
-      packages: data.packages,
-      status: 'status' in data ? data.status : response.status,
-    };
-    return this.saveAppResource(config);
-  }
-
-  /**
-   * Save app resource file
-   */
-  saveAppResource(app: AppConfigurerModel) {
-    if (!app || !app.code) {
-      return Promise.reject({ errorMsg: 'Invalid app config data', success: false });
-    }
-    const content = new Blob([JSON.stringify(app)]);
-    const id = this.createAppUrl(app.code);
-    return this.saveResource(id, content);
-  }
-
-  /**
-   * Merge page config data
+   * Merge fields into the page's published config on the server (which bumps
+   * its version); returns the merged config.
    */
   async mergePageResource(appCode: string, pageCode: string, data: Partial<PageConfigurerModel>) {
-    const config = await this.getMergedPageResource(appCode, pageCode, data);
-    return this.savePageResource(config);
+    const res = await this.post<GeneralResult<PageConfigurerModel>>('/app-page/config/merge', {
+      storeDir, appCode, code: pageCode, data,
+    }).json();
+    return res.result;
   }
 
   /**
@@ -160,16 +119,6 @@ class ResourceService extends Network {
       version: response?.version ? response?.version + 1 : 1,
     };
     return config;
-  }
-
-  /**
-   * Save the page resource file
-   */
-  async savePageResource(page: PageConfigurerModel) {
-    const data = { ...page };
-    const content = new Blob([JSON.stringify(data)]);
-    const id = this.createPageUrl(page.appCode, page.code);
-    return this.saveResource(id, content);
   }
 
   /**
@@ -294,21 +243,10 @@ class ResourceService extends Network {
   }
 
   /**
-   * Save API config
-   */
-  saveApiResources(apis: ApiMetaModel[]) {
-    const content = new Blob([JSON.stringify(apis)]);
-    const id = this.createApiUrl();
-    return this.saveResource(id, content);
-  }
-
-  /**
    * Save API mock data
    */
   saveApiResponseResource(id: string, data: any) {
-    const name = this.createApiResponseUrl(id);
-    const content = new Blob([JSON.stringify(data)]);
-    return this.saveResource(name, content);
+    return this.post<GeneralResult<string>>('/resource/api-mock', { storeDir, id, content: data }).json();
   }
 
   /**
@@ -333,14 +271,6 @@ class ResourceService extends Network {
   async getEnvVariables() {
     const data = await this.readResource<EnvironmentVariables>(this.createEnvUrl());
     return data || {};
-  }
-
-  /**
-   * Save environment variables
-   */
-  async saveEnvVariables(content: EnvironmentVariables) {
-    const blob = new Blob([JSON.stringify(content)]);
-    return this.saveResource(this.createEnvUrl(), blob);
   }
 
   async getEnvPageConfig(env: string, appCode: string, pageCode: string) {

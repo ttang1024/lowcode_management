@@ -7,7 +7,7 @@ export default class OptionsModel extends BaseModel<OptionsModel> {
   @PrimaryKey
   @AutoIncrement
   @Column
-    id: number;
+    id!: number;
 
   /** Dictionary code */
   @Length({ max: 30, msg: 'Code length cannot exceed30' })
@@ -17,7 +17,7 @@ export default class OptionsModel extends BaseModel<OptionsModel> {
     type: DataType.STRING(30),
     comment: 'Dictionary code',
   })
-    code: string;
+    code!: string;
 
   /** Dictionary name */
   @Length({ max: 100, msg: 'Dictionary name cannot exceed 22 characters' })
@@ -26,14 +26,14 @@ export default class OptionsModel extends BaseModel<OptionsModel> {
     type: DataType.STRING(100),
     comment: 'Dictionary name',
   })
-    name: string;
+    name!: string;
 
   /** Dictionary value type */
   @Column({
     type: DataType.INTEGER,
     comment: 'Dictionary value type 1=json 0=options',
   })
-    type: number;
+    type!: number;
 
   /** Value for the dictionary key */
   @Column(DataType.TEXT)
